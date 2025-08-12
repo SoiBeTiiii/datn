@@ -1,0 +1,113 @@
+/* Overlay phủ toàn màn */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100011;
+  pointer-events: none;
+}
+
+/* Khi mở */
+.open {
+  pointer-events: auto;
+}
+
+/* Nền đen mờ */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0);
+  transition: background-color 0.3s ease;
+  z-index: 1;
+}
+
+.open .backdrop {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+/* Drawer trượt phải */
+.drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 100%;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  will-change: transform;
+  z-index: 2;
+}
+
+.drawerOpen {
+  transform: translateX(0%);
+}
+
+/* Nội dung */
+.header {
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.content {
+  padding: 16px;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  justify-content: space-between; /* Căn đều giữa các phần tử trong item */
+  align-items: center; /* Căn giữa dọc các phần tử trong item */
+}
+
+.item img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 10px ;
+}
+
+.name {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.price {
+  color: #e91e63;
+  font-weight: bold;
+}
+.originalPrice{
+  text-decoration: line-through;
+  font-size: 11px;
+  color: #999;
+  margin-left: 10px;
+}
+.removeBtn {
+  background-color: #eee;
+  border: none;
+  cursor: pointer;
+  padding: 10px 10px;
+  font-size: 16px;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  color: #333;
+  margin-left: auto; /* Đặt nút xóa về bên phải */
+}
+
+.removeBtn {
+  background: transparent;
+  color: #888;
+  
+}
+.removeBtn:hover {
+  background-color: rgba(255, 0, 0, 0.1);
+  color: red;
+}

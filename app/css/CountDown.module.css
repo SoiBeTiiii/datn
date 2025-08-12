@@ -1,0 +1,11 @@
+.timer {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: linear-gradient(to right, #a4096d, #db3c9c);
+  color: #fff;
+  font-size: 1rem;
+  border-radius: 6px;
+  font-weight: bold;
+}

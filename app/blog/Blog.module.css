@@ -1,0 +1,99 @@
+.container {
+  padding: 24px;
+  background: white;
+  font-family: sans-serif;
+  padding-top: 160px;
+}
+
+.breadcrumb {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+.title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.featured {
+  display: flex;
+  margin-top: 20px;
+  gap: 24px;
+}
+
+.featuredImg {
+  width: 30%;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.featuredContent {
+  flex: 1;
+}
+
+.category {
+  color: #ff69b4;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.featuredTitle {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 8px 0;
+}
+
+.excerpt {
+  font-size: 14px;
+  color: #444;
+}
+
+.subheading {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 12px 0;
+  font-size: 14px;
+}
+
+.tabs span {
+  cursor: pointer;
+  color: #666;
+}
+
+.active {
+  color: #ff1493;
+  font-weight: bold;
+}
+
+.grid {
+  display: grid;
+  /* grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); */
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.more {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.more button {
+  background: #f06292;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+

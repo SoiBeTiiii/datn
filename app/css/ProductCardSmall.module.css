@@ -1,0 +1,48 @@
+/* components/ProductCardSmall.module.css */
+.card {
+  width: 120px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 8px;
+  position: relative;
+  font-size: 13px;
+}
+
+.image {
+  width: 100%;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.name {
+  height: 36px;
+  overflow: hidden;
+  font-weight: 500;
+}
+
+.priceBox {
+  margin-top: 4px;
+}
+
+.price {
+  color: #f06292;
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+.original {
+  color: #999;
+  font-size: 12px;
+}
+
+.discount {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: red;
+  color: white;
+  font-size: 11px;
+  padding: 2px 4px;
+  border-radius: 4px;
+}

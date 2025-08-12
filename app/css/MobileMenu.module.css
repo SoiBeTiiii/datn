@@ -1,0 +1,66 @@
+.menuDrawer {
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: 80%;
+  height: 100%;
+  background-color: white;
+  z-index: 100011; /* cao hơn overlay */
+  transition: left 0.3s ease-in-out;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.menuDrawer.open {
+  left: 0;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 100010; /* thấp hơn menuDrawer */
+}
+
+.menuHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.closeIcon {
+  cursor: pointer;
+}
+
+.menuItem {
+  padding: 12px 0;
+  font-weight: 500;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.subMenu {
+  padding-left: 12px;
+  margin-top: 10px;
+}
+
+.subMenu h4 {
+  margin: 12px 0 6px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.subMenu span {
+  display: block;
+  padding: 4px 0;
+  font-size: 14px;
+}

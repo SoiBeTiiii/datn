@@ -1,0 +1,217 @@
+/* Reset và cấu trúc cơ bản */
+.checkoutContainer {
+  margin: 180px auto;
+  /* padding-top: 300px; */
+  max-width: 1200px;
+  font-family: "Inter", sans-serif;
+  background-color: #fff;
+  margin-bottom: 50px;
+  padding: 0 20px;
+}
+
+.grid {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.left {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  min-width: 300px;
+}
+
+.right {
+  flex: 1;
+  padding: 2rem;
+  background-color: #f9fafb;
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 320px;
+}
+
+.section {
+  border: 1px solid #eaeaea;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+  padding: 1.5rem;
+}
+
+.section h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.input,
+.select,
+.textarea {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  font-size: 0.95rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  transition: border-color 0.3s ease;
+  margin-bottom: 10px;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: #3f51b5;
+}
+
+.textarea {
+  resize: vertical;
+  height: 80px;
+  width: 100%;
+}
+
+.radioGroup label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.radioGroup input[type="radio"] {
+  accent-color: #e53935;
+}
+
+/* Phần tổng kết đơn hàng */
+.summaryBox {
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 24px 28px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: #1f2937;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  transition: all 0.3s ease;
+}
+
+.summaryBox p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #374151;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.summaryBox p strong {
+  font-weight: 600;
+  color: #111827;
+}
+
+.summaryBox hr {
+  border: none;
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 10px 0;
+}
+
+.placeOrderBtn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 16px;
+  background: linear-gradient(135deg, #f06292, #ec407a);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(240, 98, 146, 0.4);
+}
+
+.placeOrderBtn:hover {
+  background: linear-gradient(135deg, #e91e63, #d81b60);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(233, 30, 99, 0.5);
+}
+
+
+/* Voucher section */
+.voucher {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.voucher input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.voucher button {
+  padding: 10px 16px;
+  background-color: #3f51b5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.voucher button:hover {
+  background-color: #303f9f;
+}
+
+/* Lỗi */
+.error {
+  border: 1px solid red !important;
+}
+
+/* Hiển thị tùy chọn biến thể sản phẩm */
+.variantOption {
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: #555;
+  background-color: #fff3f3;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  display: inline-block;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .grid {
+    flex-direction: column;
+  }
+
+  .right {
+    max-width: 100%;
+    margin-left: 0;
+  }
+
+  .row {
+    flex-direction: column;
+  }
+}

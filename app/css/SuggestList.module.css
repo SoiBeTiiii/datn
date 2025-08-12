@@ -1,0 +1,93 @@
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 12px;
+  width: 220px;
+  position: relative;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.discount {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: pink;
+  padding: 2px 6px;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.image {
+  width: 100%;
+  object-fit: cover;
+}
+
+.brand {
+  font-size: 12px;
+  color: #888;
+}
+
+.name {
+  font-weight: 600;
+  font-size: 14px;
+  overflow: hidden;
+}
+
+.price {
+  color: #ff4081;
+  font-weight: bold;
+}
+
+.original {
+  color: gray;
+  font-size: 12px;
+  text-decoration: line-through;
+  margin-left: 4px;
+}
+
+.stars {
+  font-size: 12px;
+  color: #f90;
+}
+
+.progress {
+  height: 6px;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.bar {
+  height: 100%;
+  background: #f48fb1;
+}
+
+.sold {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.buy {
+  background: #f48fb1;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-weight: bold;
+}
+
+.cart {
+  background: #f48fb1;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 10px;
+}

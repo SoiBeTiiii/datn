@@ -1,0 +1,552 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import styles from "./checkout.module.css";
+import {
+  getAddresses,
+  getDistricts,
+  getProvinces,
+  getWards,
+} from "../../lib/addressApi";
+import Address from "../interface/address";
+import { useCart } from "../context/CartConText";
+import { checkoutOrder } from "@/lib/orderApi";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { getVouchers } from "@/lib/voucherApi";
+import { Voucher } from "../interface/voucher";
+import { userInfo } from "@/lib/authApi";
+import { shippingApi } from "@/lib/shippingApi";
+import { ShippingMethod } from "@/lib/shippingApi";
+export default function CheckoutPage() {
+  const { cart } = useCart();
+  const router = useRouter();
+
+  const [voucherList, setVoucherList] = useState<Voucher[]>([]);
+  const [voucherCode, setVoucherCode] = useState("");
+  const [voucherMessage, setVoucherMessage] = useState("");
+  const [voucherData, setVoucherData] = useState<{
+    id: number;
+    discount_type: string;
+    discount_value: number;
+    max_discount: number;
+    conditions: number;
+  } | null>(null);
+
+  const [provinces, setProvinces] = useState<{ code: string; name: string }[]>(
+    []
+  );
+  const [districts, setDistricts] = useState<{ code: string; name: string }[]>(
+    []
+  );
+  const [wards, setWards] = useState<{ code: string; name: string }[]>([]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
+    null
+  );
+  const [note, setNote] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("COD");
+
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [form, setForm] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    province_code: "",
+    district_code: "",
+    ward_code: "",
+    province_name: "",
+    district_name: "",
+    ward_name: "",
+    address_detail: "",
+  });
+
+  // 🚚 Shipping methods
+  const [shippingMethods, setShippingMethods] = useState<
+    { id: number; name: string; fee: number; estimated_time: string }[]
+  >([]);
+  const [selectedShippingMethodId, setSelectedShippingMethodId] = useState<
+    number | null
+  >(null);
+
+  // ✅ Check login
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const userData = await userInfo();
+        setUser(userData);
+      } catch (err) {
+        router.push("/login");
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkAuth();
+  }, [router]);
+
+  // ✅ Load provinces
+  useEffect(() => {
+    getProvinces().then(setProvinces);
+  }, []);
+
+  // ✅ Load vouchers
+  useEffect(() => {
+    getVouchers()
+      .then(setVoucherList)
+      .catch(() => setVoucherMessage("Không thể tải voucher."));
+  }, []);
+
+  // ✅ Load districts
+  useEffect(() => {
+    if (form.province_code) {
+      getDistricts(form.province_code).then(setDistricts);
+    } else {
+      setDistricts([]);
+      setWards([]);
+    }
+  }, [form.province_code]);
+
+  // ✅ Load wards
+  useEffect(() => {
+    if (form.district_code) {
+      getWards(form.district_code).then(setWards);
+    } else {
+      setWards([]);
+    }
+  }, [form.district_code]);
+
+  // ✅ Load addresses
+  useEffect(() => {
+    const fetchAddress = async () => {
+      try {
+        const list = await getAddresses();
+        setAddresses(list);
+        const def = list.find((addr) => addr.is_default);
+        if (def) setSelectedAddressId(def.id);
+      } catch (err) {
+        console.error("Lỗi khi tải địa chỉ:", err);
+      }
+    };
+    setNote(localStorage.getItem("checkout_note") || "");
+    fetchAddress();
+  }, []);
+
+  // ✅ Khi chọn address => set form
+  useEffect(() => {
+    const selected = addresses.find((addr) => addr.id === selectedAddressId);
+    if (selected) {
+      setForm({
+        first_name: selected.receiver.first_name,
+        last_name: selected.receiver.last_name,
+        email: selected.receiver.email,
+        phone: selected.receiver.phone,
+        province_code: selected.province.code || "",
+        district_code: selected.district.code || "",
+        ward_code: selected.ward.code || "",
+        province_name: selected.province.name,
+        district_name: selected.district.name,
+        ward_name: selected.ward.name,
+        address_detail: selected.address_detail,
+      });
+    }
+  }, [selectedAddressId, addresses]);
+
+  useEffect(() => {
+    const loadShippingMethods = async () => {
+      if (!form.province_code) {
+        setShippingMethods([]);
+        setSelectedShippingMethodId(null);
+        return;
+      }
+
+      const methods = await shippingApi.getMethods(form.province_code);
+      setShippingMethods(methods);
+      if (methods.length > 0) {
+        setSelectedShippingMethodId(methods[0].id);
+      }
+    };
+
+    loadShippingMethods();
+  }, [form.province_code]);
+
+  // 💰 Tính tiền
+  const subtotal = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+  const originalTotal = subtotal;
+
+  const discount = cart.reduce((sum, item) => {
+    const price = item.price;
+    const quantity = item.quantity;
+    if (item.promotion) {
+      if (item.promotion.type === "percentage") {
+        return sum + (price * quantity * item.promotion.value) / 100;
+      } else if (item.promotion.type === "fixed_amount") {
+        return sum + item.promotion.value;
+      }
+    }
+    return sum;
+  }, 0);
+
+  const selectedShippingFee =
+    shippingMethods.find((m) => m.id === selectedShippingMethodId)?.fee || 0;
+
+  let voucherDiscount = 0;
+  if (voucherData) {
+    if (voucherData.discount_type === "percent") {
+      voucherDiscount = Math.min(
+        (originalTotal * voucherData.discount_value) / 100,
+        voucherData.max_discount
+      );
+    } else if (voucherData.discount_type === "amount") {
+      voucherDiscount = voucherData.discount_value;
+    }
+  }
+
+  const total = subtotal - discount - voucherDiscount + selectedShippingFee;
+
+  const handleApplyVoucher = () => {
+    const matched = voucherList.find(
+      (v) => v.code.toLowerCase() === voucherCode.toLowerCase()
+    );
+
+    if (!matched) {
+      setVoucherData(null);
+      setVoucherMessage("Mã không hợp lệ.");
+      return;
+    }
+
+    if (subtotal < matched.conditions) {
+      setVoucherData(null);
+      setVoucherMessage(
+        `Đơn hàng cần tối thiểu ${matched.conditions.toLocaleString()}₫ để dùng mã này.`
+      );
+      return;
+    }
+
+    setVoucherData({
+      id: matched.id,
+      discount_type: matched.discount_type,
+      discount_value: matched.discount_value,
+      max_discount: matched.max_discount || 0,
+      conditions: matched.conditions,
+    });
+    setVoucherMessage("🎉 Áp dụng mã thành công!");
+  };
+
+  const handlePlaceOrder = async () => {
+    try {
+      const hasGifts = cart.some((item) => item.isGift);
+
+      const payload = {
+        total_price: subtotal,
+        total_discount: discount + voucherDiscount,
+        note: "",
+        shipping_name: `${form.first_name} ${form.last_name}`,
+        shipping_phone: form.phone,
+        province_code: form.province_code,
+        shipping_email: form.email,
+        shipping_address: `${form.address_detail}, ${form.ward_name}, ${form.district_name}, ${form.province_name}`,
+        payment_method: paymentMethod,
+        voucher_id: voucherData?.id || null,
+        shipping_method_id: selectedShippingMethodId,
+        orders: [
+          {
+            products: cart
+              .filter((item) => !item.isGift)
+              .map((item) => ({
+                id: item.variantId,
+                quantity: item.quantity,
+                price: item.originalPrice,
+                sale_price: item.sale_price || item.originalPrice,
+              })),
+            ...(hasGifts && {
+              gifts: cart
+                .filter((item) => item.isGift)
+                .map((gift) => ({
+                  id: gift.variantId,
+                  quantity: gift.quantity,
+                })),
+            }),
+          },
+        ],
+      };
+      const res = (await checkoutOrder(payload)) as { data?: { redirect_url?: string } };
+      console.log("Checkout response:", res);
+
+      if (paymentMethod === "MOMO" || paymentMethod === "VNPAY") {
+        const redirectUrl = res?.data?.redirect_url;
+        if (redirectUrl) {
+          toast.success("✅ Đang chuyển hướng đến cổng thanh toán...");
+          window.location.href = redirectUrl; // redirect sang trang thanh toán
+          return; // dừng lại, không chạy tiếp
+        } else {
+          toast.error("❌ Không nhận được link thanh toán từ server");
+          return;
+        }
+      }
+
+      // Nếu là COD thì không redirect
+      toast.success("✅ Đặt hàng thành công!");
+      localStorage.removeItem("egomall_cart");
+      router.push("/thank-you");
+    } catch (error) {
+      toast.error("❌ Đặt hàng thất bại!");
+      console.error(error);
+    }
+  };
+
+  return (
+    <div className={styles.checkoutContainer}>
+      <h1>Thông tin thanh toán</h1>
+      <div className={styles.grid}>
+        {/* LEFT */}
+        <div className={styles.left}>
+          {/* Buyer Info */}
+          <section className={styles.section}>
+            <h2>Thông tin người mua hàng</h2>
+            <div className={styles.row}>
+              <input
+                className={styles.input}
+                placeholder="Tên"
+                value={form.first_name}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, first_name: e.target.value }))
+                }
+              />
+              <input
+                className={styles.input}
+                placeholder="Họ"
+                value={form.last_name}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, last_name: e.target.value }))
+                }
+              />
+            </div>
+            <div className={styles.row}>
+              <input
+                className={styles.input}
+                placeholder="Số điện thoại"
+                value={form.phone}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, phone: e.target.value }))
+                }
+              />
+              <input
+                className={styles.input}
+                type="email"
+                placeholder="Email"
+                value={form.email}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, email: e.target.value }))
+                }
+              />
+            </div>
+          </section>
+
+          {/* Shipping Info */}
+          <section className={styles.section}>
+            <h2>Thông tin nhận hàng</h2>
+            <select
+              className={styles.select}
+              value={selectedAddressId || ""}
+              onChange={(e) => setSelectedAddressId(Number(e.target.value))}
+            >
+              <option value="" disabled>
+                -- Chọn địa chỉ đã lưu --
+              </option>
+              {addresses.map((addr) => (
+                <option key={addr.id} value={addr.id}>
+                  {addr.address_name} - {addr.address_detail}
+                </option>
+              ))}
+            </select>
+            <div className={styles.row}>
+              <select
+                className={styles.select}
+                value={form.province_code}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    province_code: e.target.value,
+                    district_code: "",
+                    ward_code: "",
+                  }))
+                }
+              >
+                <option value="">Tỉnh/Thành phố</option>
+                {provinces.map((p) => (
+                  <option key={p.code} value={p.code}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                className={styles.select}
+                value={form.district_code}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    district_code: e.target.value,
+                    ward_code: "",
+                  }))
+                }
+                disabled={!form.province_code}
+              >
+                <option value="">Quận/Huyện</option>
+                {districts.map((d) => (
+                  <option key={d.code} value={d.code}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                className={styles.select}
+                value={form.ward_code}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, ward_code: e.target.value }))
+                }
+                disabled={!form.district_code}
+              >
+                <option value="">Phường/Xã</option>
+                {wards.map((w) => (
+                  <option key={w.code} value={w.code}>
+                    {w.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <input
+              className={styles.input}
+              placeholder="Địa chỉ cụ thể"
+              value={form.address_detail}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, address_detail: e.target.value }))
+              }
+            />
+          </section>
+
+          {/* Shipping Method */}
+          <section className={styles.section}>
+            <h2>Phương thức vận chuyển</h2>
+            {shippingMethods.length === 0 ? (
+              <p>
+                Vui lòng chọn Tỉnh/Thành phố để hiển thị phương thức vận chuyển.
+              </p>
+            ) : (
+              <div className={styles.radioGroup}>
+                {shippingMethods.map((method) => (
+                  <label key={method.id} className={styles.radioItem}>
+                    <input
+                      type="radio"
+                      name="shippingMethod"
+                      value={method.id}
+                      checked={selectedShippingMethodId === method.id}
+                      onChange={() => setSelectedShippingMethodId(method.id)}
+                    />
+                    <span>
+                      {method.name} - {method.fee.toLocaleString()}₫ (
+                      {method.estimated_time})
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Payment */}
+          <section className={styles.section}>
+            <h2>Phương thức thanh toán</h2>
+            <div className={styles.radioGroup}>
+              {["COD", "MOMO", "VNPAY"].map((method) => (
+                <label key={method}>
+                  <input
+                    type="radio"
+                    name="payment"
+                    value={method}
+                    checked={paymentMethod === method}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  />
+                  {method === "COD" ? "Thanh toán khi nhận hàng (COD)" : method}
+                </label>
+              ))}
+            </div>
+          </section>
+
+          {/* Note */}
+          <section className={styles.section}>
+            <h2>Ghi chú</h2>
+            <textarea
+              className={styles.textarea}
+              placeholder="Ghi chú"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </section>
+        </div>
+
+        {/* RIGHT */}
+        <div className={styles.right}>
+          <div className={styles.summaryBox}>
+            {cart.length === 0 ? (
+              <p>Bạn chưa có sản phẩm nào trong giỏ hàng</p>
+            ) : (
+              <>
+                {cart.map((item, index) => (
+                  <p key={`${item.productId}-${item.variantId}-${index}`}>
+                    {item.name} - {item.price.toLocaleString()}₫
+                  </p>
+                ))}
+                <hr />
+                <p>
+                  Tổng giá trị đơn hàng:{" "}
+                  <strong>{originalTotal.toLocaleString()}₫</strong>
+                </p>
+                {voucherDiscount > 0 && (
+                  <p>
+                    Giảm mã:{" "}
+                    <strong>{voucherDiscount.toLocaleString()}₫</strong>
+                  </p>
+                )}
+                {selectedShippingFee > 0 && (
+                  <p>
+                    Phí vận chuyển:{" "}
+                    <strong>{selectedShippingFee.toLocaleString()}₫</strong>
+                  </p>
+                )}
+                <p>
+                  Tổng cộng: <strong>{total.toLocaleString()}₫</strong>
+                </p>
+                <button
+                  className={styles.placeOrderBtn}
+                  onClick={handlePlaceOrder}
+                  disabled={!selectedShippingMethodId}
+                >
+                  ĐẶT HÀNG
+                </button>
+              </>
+            )}
+          </div>
+
+          <div className={styles.voucher}>
+            <input
+              className={styles.input}
+              placeholder="Nhập mã giảm giá"
+              value={voucherCode}
+              onChange={(e) => setVoucherCode(e.target.value)}
+            />
+            <button onClick={handleApplyVoucher}>Áp dụng</button>
+            {voucherMessage && (
+              <p style={{ color: voucherData ? "green" : "red" }}>
+                {voucherMessage}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

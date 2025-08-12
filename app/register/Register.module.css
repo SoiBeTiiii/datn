@@ -1,0 +1,120 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to right, #ffe3ec, #fad0c4);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.card {
+  background-color: white;
+  display: flex;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  max-width: 900px;
+  width: 100%;
+}
+
+.leftPanel {
+  background: linear-gradient(to bottom right, #f48fb1, #f06292);
+  color: white;
+  padding: 40px;
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+}
+
+.leftPanel h1 {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.leftPanel p {
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.leftPanel img {
+  max-width: 100%;
+  margin-top: auto;
+}
+
+.form {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form h2 {
+  font-size: 28px;
+  color: #f06292;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.input {
+  padding: 14px 18px;
+  font-size: 15px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  outline: none;
+  transition: 0.3s;
+}
+
+.input:focus {
+  border-color: #f06292;
+  box-shadow: 0 0 0 2px rgba(240, 98, 146, 0.2);
+}
+
+.button {
+  background-color: #f06292;
+  color: white;
+  border: none;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.button:hover {
+  background-color: #e91e63;
+}
+
+.link {
+  text-align: center;
+  font-size: 14px;
+  color: #333;
+}
+
+.link a {
+  color: #f06292;
+  text-decoration: none;
+}
+
+.link a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card {
+    flex-direction: column;
+  }
+
+  .leftPanel {
+    padding: 30px;
+    text-align: center;
+  }
+
+  .form {
+    padding: 30px;
+  }
+}

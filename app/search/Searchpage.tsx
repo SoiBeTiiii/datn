@@ -35,8 +35,8 @@ export default function SearchPage() {
       </h2>
 
       <div className={styles.grid}>
-        {results.map((product) => (
-          <ProductCard key={product.id} {...product} />
+        {results.map((product, index) => (
+          <ProductCard key={index} {...product} />
         ))}
       </div>
     </div>

@@ -3,11 +3,14 @@ import styles from "./productDetail.module.css";
 import ProductCard from "../../components/ProductCard";
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { fetchProductBySlug, fetchReviewsByProductSlug } from "../../../lib/productApi";
+import {
+  fetchProductBySlug,
+  fetchReviewsByProductSlug,
+} from "../../../lib/productApi";
 import { ProductDetail, Review } from "@/app/interface/ProductDetail";
 import CountdownTimer from "../../components/CountDown";
 import { useCart } from "../../context/CartConText";
-
+import { toast } from "react-toastify";
 export default function ProductDetailPage() {
   const { slug } = useParams();
   const [product, setProduct] = useState<ProductDetail | null>(null);
@@ -76,7 +79,7 @@ export default function ProductDetailPage() {
             setSelectedVariant(null);
             setSelectedImage(res.image);
           }
-          setReviews(reviewsResponse);;
+          setReviews(reviewsResponse);
         }
       } catch (error) {
         console.error("Lỗi khi fetch sản phẩm:", error);
@@ -94,9 +97,10 @@ export default function ProductDetailPage() {
     const newOptions = { ...selectedOptions, [name]: value };
     setSelectedOptions(newOptions);
 
-    const matched = product?.variants.find((variant) =>
-      Array.isArray(variant.options) &&
-      variant.options.every((opt) => newOptions[opt.name] === opt.value)
+    const matched = product?.variants.find(
+      (variant) =>
+        Array.isArray(variant.options) &&
+        variant.options.every((opt) => newOptions[opt.name] === opt.value)
     );
 
     setSelectedVariant(matched || null);
@@ -145,7 +149,6 @@ export default function ProductDetailPage() {
           </figure>
         </section>
 
-
         <section className={styles["product-info"]}>
           <header>
             <div className={styles["brand"]}>{product.brand}</div>
@@ -158,7 +161,7 @@ export default function ProductDetailPage() {
             <div className={styles["sku"]}>
               Tình trạng:{" "}
               <span className={styles["in-stock"]}>
-                {product.status || "Còn hàng"}
+                {selectedVariant?.quantity > 0 ? "Còn hàng" : "Hết hàng"}{" "}
               </span>{" "}
               | Mã SKU:{" "}
               <span className={styles["sku-value"]}>
@@ -180,8 +183,9 @@ export default function ProductDetailPage() {
                   return (
                     <button
                       key={valueId}
-                      className={`${styles["option-button"]} ${isSelected ? styles["selected"] : ""
-                        }`}
+                      className={`${styles["option-button"]} ${
+                        isSelected ? styles["selected"] : ""
+                      }`}
                       onClick={() =>
                         handleOptionSelect(option.name, valueLabel)
                       }
@@ -216,18 +220,18 @@ export default function ProductDetailPage() {
 
           {(selectedVariant?.promotion?.endDate ||
             product?.promotion?.endDate) && (
-              <div className={styles["countdown-wrapper"]}>
-                <p className={styles["countdown-title"]}>
-                  ⏰ Khuyến mãi kết thúc sau:
-                </p>
-                <CountdownTimer
-                  targetDate={
-                    selectedVariant?.promotion?.endDate ||
-                    product?.promotion?.endDate
-                  }
-                />
-              </div>
-            )}
+            <div className={styles["countdown-wrapper"]}>
+              <p className={styles["countdown-title"]}>
+                ⏰ Khuyến mãi kết thúc sau:
+              </p>
+              <CountdownTimer
+                targetDate={
+                  selectedVariant?.promotion?.endDate ||
+                  product?.promotion?.endDate
+                }
+              />
+            </div>
+          )}
 
           <div className={styles["quantity"]}>
             <label htmlFor="quantity-input">Số lượng:</label>
@@ -266,7 +270,9 @@ export default function ProductDetailPage() {
             <button
               className={styles["add-cart"]}
               disabled={!selectedVariant}
-              onClick={() =>
+              onClick={() => {
+                if (!selectedVariant) return;
+
                 addToCart({
                   productId: product.id,
                   id: product.id,
@@ -286,16 +292,22 @@ export default function ProductDetailPage() {
                   sale_price: null,
                   promotion: undefined,
                   originalPrice: 0,
-                  discount: 0
-                })
-              }
+                  discount: 0,
+                });
+
+                toast.success("🎉 Đã thêm vào giỏ hàng!", {
+                  position: "top-right",
+                  autoClose: 3000,
+                  hideProgressBar: false,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: true,
+                });
+              }}
             >
               Thêm vào giỏ
             </button>
           </div>
-
-
-
           <ul className={styles["features"]}>
             <li>🚚 Giao hàng toàn quốc</li>
             <li>🎁 Tích điểm tất cả sản phẩm</li>
@@ -362,7 +374,13 @@ export default function ProductDetailPage() {
 
               {review.reply && (
                 <div className={styles["review-reply"]}>
-                  <strong>Phản hồi từ {review.reply.user.role === "admin" ? "admin" : "người dùng"}:</strong>
+                  <strong>
+                    Phản hồi từ{" "}
+                    {review.reply.user.role === "admin"
+                      ? "admin"
+                      : "người dùng"}
+                    :
+                  </strong>
                   <p>{review.reply.reply}</p>
                   <small>
                     {new Date(review.reply.date).toLocaleDateString("vi-VN")}
@@ -373,7 +391,6 @@ export default function ProductDetailPage() {
           ))
         )}
       </section>
-
 
       <section className={styles["related-products"]}>
         <h2>Sản phẩm liên quan</h2>
@@ -390,7 +407,11 @@ export default function ProductDetailPage() {
               originalPrice={rel.price}
               discount={Math.round(100 - (rel.sale_price * 100) / rel.price)}
               sold={Math.floor(Math.random() * 100)}
-              average_rating={rel.average_rating} variants={[]} type={undefined} type_skin={undefined}            />
+              average_rating={rel.average_rating}
+              variants={[]}
+              type={undefined}
+              type_skin={undefined}
+            />
           ))}
         </div>
       </section>

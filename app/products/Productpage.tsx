@@ -56,7 +56,7 @@ export default function ProductsPage() {
             keyword: keyword ?? undefined,
           });
         }
-
+        
         setProducts(fetchedProducts);
       } catch (err) {
         console.error("Lỗi khi fetch sản phẩm:", err);
@@ -159,7 +159,7 @@ export default function ProductsPage() {
           ))}
         </div>
 
-        <div className={styles["filter-section"]}>
+        {/* <div className={styles["filter-section"]}>
           <h2 className={styles["filter-title"]}>Loại</h2>
           {typeOptions.map((type) => (
             <label key={type.id}>
@@ -173,7 +173,7 @@ export default function ProductsPage() {
               {type.name}
             </label>
           ))}
-        </div>
+        </div> */}
 
         <div className={styles["filter-section"]}>
           <h2 className={styles["filter-title"]}>Loại da</h2>
@@ -286,7 +286,7 @@ export default function ProductsPage() {
                 ))}
               </div>
 
-              <div className={styles["filter-section"]}>
+              {/* <div className={styles["filter-section"]}>
                 <h2>Loại</h2>
                 {typeOptions.map((type) => (
                   <label key={type.id}>
@@ -300,7 +300,7 @@ export default function ProductsPage() {
                     {type.name}
                   </label>
                 ))}
-              </div>
+              </div> */}
 
               <div className={styles["filter-section"]}>
                 <h2>Loại da</h2>

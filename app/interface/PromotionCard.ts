@@ -8,7 +8,7 @@ export default interface ProductCardProps {
   image: string;
   sold?: number;
   discount?: number;
-  rating?: number;
+  average_rating?: number;
   final_price_discount?: number;
   promotionName?: string; 
   conditions?: any;

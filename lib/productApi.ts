@@ -30,14 +30,14 @@ export const fetchProducts = async (
   if (filters.search) searchParams.append('search', filters.search);
   if (filters.sort) searchParams.append('sort', filters.sort);
   if (filters.brand?.length) searchParams.append('brand', filters.brand.join(','));
-  if (filters.types?.length) searchParams.append('type', filters.types.join(','));
+  // if (filters.types?.length) searchParams.append('type', filters.types.join(','));
   if (filters.type_skin?.length) searchParams.append('type_skin', filters.type_skin.join(','));
   if (filters.price_range?.length) searchParams.append('price_range', filters.price_range.join(','));
 
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
   const res = await baseAxios.get(`${baseUrl}/products?${searchParams.toString()}`);
   const data = res.data as { data: any[] };
-
+  // console.log(res);
   return data.data.map((item) => {
     const sortedVariants = (item.variants || []).sort((a: any, b: any) => {
       const priceA = a.final_price_discount ?? a.sale_price ?? a.price;
@@ -62,8 +62,8 @@ export const fetchProducts = async (
       price,
       originalPrice,
       discount,
-      sold: Math.floor(Math.random() * 100),
-      rating: item.average_rating ?? 0,
+      sold: item.sold_count,
+      average_rating: item.average_rating ?? 0,
       variants: item.variants ?? [],
     } as ProductCardProps;
   });

@@ -10,7 +10,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Chatbot from "./components/Chatbot"; // thêm chatbot nếu cần
 export const metadata = {
-  title: "My Mantine app",
+  title: "Egomall",
   description: "I have followed setup instructions carefully",
 };
 
@@ -27,7 +27,7 @@ export default function RootLayout({
           <CartProvider>
             <Chatbot />
             <ClientLayout>{children}</ClientLayout>
-            <ToastContainer />
+            <ToastContainer position="top-right" autoClose={3000} />
           </CartProvider>
         </AuthProvider>
       </body>

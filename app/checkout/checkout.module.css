@@ -155,9 +155,46 @@
 
 /* Voucher section */
 .voucher {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fafafa;
+}
+.voucher > p {
+  margin: 0 0 0.75rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.voucherList {
   display: flex;
-  gap: 8px;
-  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.voucherItem {
+  flex: 1 1 auto;          
+  max-width: 330px;         /* giới hạn chiều ngang */
+  padding: 0.5rem 0.75rem;
+  font-size: 12px;
+  border: 1px solid #1976d2;
+  border-radius: 4px;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.voucherItem:hover {
+  background-color: #bbdefb;
+}
+.selectedVoucher {
+  background-color: #1976d2;
+  color: #fff;
+  border-color: #115293;
 }
 
 .voucher input {

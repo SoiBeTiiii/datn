@@ -1,4 +1,4 @@
-import { SetStateAction } from "react";
+import { ReactNode, SetStateAction } from "react";
 
 export interface GiftProduct {
   id: number;
@@ -26,7 +26,9 @@ export interface Product {
 }
 
 export interface Order {
+  payment_method: ReactNode;
   unique_id: string;
+  // can_request_return: boolean;
   status: string; // e.g., 'ordered', 'delivered', etc.
   display_status: string; // e.g., 'Chờ xác nhận', 'Cần đánh giá'
   total_price: number;
@@ -35,6 +37,10 @@ export interface Order {
   can_cancel: boolean;
   can_review: boolean;
   can_request_return: boolean;
+  return_status: string;
+  return_reason: string;
+  return_request_at:string;
+  can_pay: boolean;
   products: Product[];
 }
 
@@ -45,6 +51,7 @@ export interface OrderDetailResponse {
   total_price: number;
   total_discount: string;
   delivered_at: string | null;
+  can_pay: boolean;
   can_cancel: boolean;
   can_review: boolean;
   can_request_return: boolean;
@@ -54,6 +61,9 @@ export interface OrderDetailResponse {
   payment_method: string;
   payment_date: string | null;
   payment_status: string;
+  return_status: string;
+  return_reason: string;
+  return_request_at:string;
   address: string;
   shipping_method_snapshot: string;
   shipping_fee: string;

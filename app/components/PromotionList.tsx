@@ -126,7 +126,7 @@ export default function ProductListSlider() {
             image={p.image ?? ""}
             sold={p.sold ?? 0}
             discount={p.discount ?? 0}
-            rating={p.rating ?? 0}
+            average_rating={p.average_rating ?? 0}
             promotionName={p.promotionName}
             endDate={p.endDate}
           />

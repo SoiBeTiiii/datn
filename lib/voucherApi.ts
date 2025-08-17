@@ -5,5 +5,6 @@ import baseAxios from "./baseAxios";
 export async function getVouchers(): Promise<Voucher[]> {
   const res = await baseAxios.get("/vouchers");
   const data = res.data as { data: Voucher[] };
+  console.log("Vouchers fetched:", data.data); // Log the fetched vouchers
   return data.data; // trả về mảng voucher
 };

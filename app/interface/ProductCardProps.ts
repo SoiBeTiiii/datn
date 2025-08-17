@@ -1,4 +1,6 @@
 export default interface ProductCardProps {
+  // parentProductId: any;
+  // promotion: any;
   variants: never[];
   id: number;
   name: string;

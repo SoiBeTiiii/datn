@@ -1,47 +1,44 @@
-// lib/authAxios.ts
 import axios from 'axios';
 
+// Tạo instance axios cho các request liên quan đến xác thực
 const authAxios = axios.create({
-  // baseURL: 'http://api-gateway.egomall.io.vn/api/v1/auth/',
-  baseURL: 'http://localhost:8000/api/v1/auth/',
-  withCredentials: true, // <- cực kỳ quan trọng để gửi cookie
+  baseURL: 'https://api-gateway-egomall.io.vn/api/v1/auth/', // Đổi thành domain thật nếu cần
+  withCredentials: true, // 🔥 Bắt buộc để gửi cookie (access & refresh token)
   headers: {
     Accept: 'application/json',
     'Content-Type': 'application/json',
   },
 });
 
-// Refresh token khi bị 401
-// authAxios.interceptors.response.use(
-//   (response) => response,
-//   async (error) => {
-//     const originalRequest = error.config;
+// Interceptor để tự động refresh token khi gặp lỗi 401
+  // authAxios.interceptors.response.use(
+  //   (response) => response,
+  //   async (error) => {
+  //     const originalRequest = error.config;
 
-//     // Nếu lỗi 401 và chưa từng thử refresh
-//     if (error.response?.status === 401 && !originalRequest._retry) {
-//       originalRequest._retry = true;
+  //     // Nếu lỗi là 401 và chưa retry
+  //     if (
+  //       error.response?.status === 401 &&
+  //       !originalRequest._retry
+  //     ) {
+  //       originalRequest._retry = true;
 
-//       try {
-//         // Gọi refresh (backend sẽ gửi lại cookie mới nếu hợp lệ)
-//         await axios.post(
-//           'http://localhost:8000/api/v1/auth/refresh',
-//           {},
-//           {
-//             withCredentials: true,
-//             headers: {
-//               Accept: 'application/json',
-//             },
-//           }
-//         );
+  //       try {
+  //         // Gọi API refresh token (cookie sẽ tự được gửi)
+  //         await authAxios.post('refresh');
 
-//         // Sau khi refresh thành công, gửi lại request gốc
-//         return authAxios(originalRequest);
-//       } catch (refreshError) {
-//       }
-//     }
+  //         // Thử lại request gốc
+  //         return authAxios(originalRequest);
+  //       } catch (refreshError) {
+  //         console.error('❌ Refresh token thất bại:', refreshError);
 
-//     return Promise.reject(error);
-//   }
-// );
+  //         // Tuỳ bạn: có thể logout, redirect, hoặc hiển thị thông báo
+  //         // Ví dụ: window.location.href = '/login';
+  //       }
+  //     }
+
+  //     return Promise.reject(error);
+  //   }
+  // );
 
 export default authAxios;

@@ -2,7 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"; // ✅ ĐÚNG cho App Router
-import { MdMenu, MdStore, MdEdit, MdPerson, MdFavorite, MdShoppingCart, MdSearch } from "react-icons/md";
+import {
+  MdMenu,
+  MdStore,
+  MdEdit,
+  MdPerson,
+  MdFavorite,
+  MdShoppingCart,
+  MdSearch,
+} from "react-icons/md";
 import Link from "next/link";
 import CartDrawer from "./CartDrawer";
 import WishlistDrawer from "./WishlistDrawer";
@@ -10,7 +18,11 @@ import MobileMenu from "./MobileMenu";
 import { useCart } from "../context/CartConText";
 import { useAuth } from "../context/AuthContext";
 import searchProducts from "../../lib/searchApi";
-import { addToWishlist, getWishlists, removeFromWishlist } from "../../lib/wishlistApi";
+import {
+  addToWishlist,
+  getWishlists,
+  removeFromWishlist,
+} from "../../lib/wishlistApi";
 import { fetchCategories } from "../../lib/categoryApi";
 import Category from "../../app/interface/Category";
 import styles from "../css/HeaderSearch.module.css";
@@ -31,11 +43,32 @@ export default function Header() {
 
   const [isScrolled, setIsScrolled] = useState(false); // Trạng thái cuộn
 
+  useEffect(() => {
+  const delayDebounce = setTimeout(async () => {
+    if (keyword.trim()) {
+      try {
+        const data = await searchProducts(keyword);
+        setResults(data);
+        setShowResults(true);
+      } catch (err) {
+        console.error("Lỗi tìm kiếm:", err);
+        setResults([]);
+        setShowResults(false);
+      }
+    } else {
+      setResults([]);
+      setShowResults(false);
+    }
+  }, 300); // debounce 300ms
+
+  return () => clearTimeout(delayDebounce);
+}, [keyword]);
+
   // Fetch wishlist khi component mount
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
-        const data = await getWishlists() as { data: any[] }; // Fetch wishlist từ API
+        const data = (await getWishlists()) as { data: any[] }; // Fetch wishlist từ API
         if (data && Array.isArray(data.data)) {
           setWishlistItems(data.data); // Cập nhật danh sách sản phẩm yêu thích
         } else {
@@ -122,18 +155,24 @@ export default function Header() {
 
   return (
     <>
-      <header className={`${styles.header} ${isScrolled ? styles.hide : styles.show}`}>
+      <header
+        className={`${styles.header} ${isScrolled ? styles.hide : styles.show}`}
+      >
         {/* Các phần tử khác */}
         <div className={styles.topBar}>
           <p>
             FRESHIAN TRANG ĐIỂM THUẦN CHAY CAO CẤP · FREESHIP 15K ĐƠN TỪ 199K ·
-            Mua online nhận nhanh tại cửa hàng · Giao nhanh 24H tại Tp. Hồ Chí Minh
+            Mua online nhận nhanh tại cửa hàng · Giao nhanh 24H tại Tp. Hồ Chí
+            Minh
           </p>
         </div>
 
         {/* Main Header Bar */}
         <div className={styles.mainBar}>
-          <div className={styles.menuIcon} onClick={() => setMobileMenuOpen(true)}>
+          <div
+            className={styles.menuIcon}
+            onClick={() => setMobileMenuOpen(true)}
+          >
             <MdMenu size={24} />
           </div>
 
@@ -144,6 +183,7 @@ export default function Header() {
             onSubmit={(e) => {
               e.preventDefault();
               router.push(`/search?search=${encodeURIComponent(keyword)}`);
+              setShowResults(false);
             }}
             className={styles.searchBox}
           >
@@ -152,13 +192,22 @@ export default function Header() {
               placeholder="Tìm kiếm sản phẩm..."
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              onKeyDown={handleKeyDown}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  router.push(`/search?search=${encodeURIComponent(keyword)}`);
+                  setShowResults(false);
+                }
+              }}
             />
             <MdSearch
               className={styles.searchIcon}
-              onClick={handleSearch}
+              onClick={() => {
+                router.push(`/search?search=${encodeURIComponent(keyword)}`);
+                setShowResults(false);
+              }}
               style={{ cursor: "pointer" }}
             />
+
             {showResults && results.length > 0 && (
               <ul className={styles.searchDropdown}>
                 {results.slice(0, 5).map((item) => (
@@ -221,7 +270,10 @@ export default function Header() {
             )}
 
             {/* Wishlist Icon */}
-            <div className={styles.iconItem} onClick={() => setWishlistOpen(true)}>
+            <div
+              className={styles.iconItem}
+              onClick={() => setWishlistOpen(true)}
+            >
               <MdFavorite size={20} />
               <span>Đã thích</span>
             </div>
@@ -230,7 +282,9 @@ export default function Header() {
             <div className={styles.iconItem} onClick={() => setCartOpen(true)}>
               <div className={styles.cartWrapper}>
                 <MdShoppingCart size={20} />
-                {totalQuantity > 0 && <span className={styles.cartBadge}>{totalQuantity}</span>}
+                {totalQuantity > 0 && (
+                  <span className={styles.cartBadge}>{totalQuantity}</span>
+                )}
               </div>
               <span>Giỏ hàng</span>
             </div>
@@ -248,7 +302,9 @@ export default function Header() {
             </Link>
             {categories.map((parent) => (
               <li key={parent.id} className={styles.navItem}>
-                <Link href={`/products?category=${parent.slug}`}>{parent.name}</Link>
+                <Link href={`/products?category=${parent.slug}`}>
+                  {parent.name}
+                </Link>
                 <div className={styles.megaMenu}>
                   {parent.children?.map((child) => (
                     <div key={child.id} className={styles.megaColumn}>
@@ -256,7 +312,10 @@ export default function Header() {
                         <h4>{child.name}</h4>
                       </Link>
                       {child.children?.map((grandchild) => (
-                        <Link key={grandchild.id} href={`/products?category=${grandchild.slug}`}>
+                        <Link
+                          key={grandchild.id}
+                          href={`/products?category=${grandchild.slug}`}
+                        >
                           <span>{grandchild.name}</span>
                         </Link>
                       ))}
@@ -278,7 +337,12 @@ export default function Header() {
         onAddToWishlist={handleAddToWishlist}
         onRemoveFromWishlist={handleRemoveFromWishlist}
       />
-      {mobileMenuOpen && <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />}
+      {mobileMenuOpen && (
+        <MobileMenu
+          isOpen={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+        />
+      )}
     </>
   );
 }

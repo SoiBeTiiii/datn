@@ -26,6 +26,7 @@ export interface ProductVariant {
 }
 
 export interface ProductDetail {
+  quantity: number;
   id: number;
   name: string;
   slug: string;

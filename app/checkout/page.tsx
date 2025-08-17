@@ -25,6 +25,7 @@ export default function CheckoutPage() {
   const [voucherList, setVoucherList] = useState<Voucher[]>([]);
   const [voucherCode, setVoucherCode] = useState("");
   const [voucherMessage, setVoucherMessage] = useState("");
+
   const [voucherData, setVoucherData] = useState<{
     id: number;
     discount_type: string;
@@ -219,7 +220,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (subtotal < matched.conditions) {
+    if (originalTotal < matched.conditions) {
       setVoucherData(null);
       setVoucherMessage(
         `Đơn hàng cần tối thiểu ${matched.conditions.toLocaleString()}₫ để dùng mã này.`
@@ -244,7 +245,7 @@ export default function CheckoutPage() {
       const payload = {
         total_price: subtotal,
         total_discount: discount + voucherDiscount,
-        note: "",
+        note,
         shipping_name: `${form.first_name} ${form.last_name}`,
         shipping_phone: form.phone,
         province_code: form.province_code,
@@ -274,7 +275,9 @@ export default function CheckoutPage() {
           },
         ],
       };
-      const res = (await checkoutOrder(payload)) as { data?: { redirect_url?: string } };
+      const res = (await checkoutOrder(payload)) as {
+        data?: { redirect_url?: string };
+      };
       console.log("Checkout response:", res);
 
       if (paymentMethod === "MOMO" || paymentMethod === "VNPAY") {
@@ -290,8 +293,9 @@ export default function CheckoutPage() {
       }
 
       // Nếu là COD thì không redirect
-      toast.success("✅ Đặt hàng thành công!");
       localStorage.removeItem("egomall_cart");
+
+      toast.success("✅ Đặt hàng thành công!");
       router.push("/thank-you");
     } catch (error) {
       toast.error("❌ Đặt hàng thất bại!");
@@ -532,13 +536,43 @@ export default function CheckoutPage() {
           </div>
 
           <div className={styles.voucher}>
+            <p>Voucher khả dụng:</p>
+            <div className={styles.voucherList}>
+              {voucherList.length === 0 && <p>Không có voucher nào.</p>}
+              {voucherList.map((v) => (
+                <button
+                  key={v.id}
+                  className={styles.voucherItem}
+                  onClick={() => setVoucherCode(v.code)}
+                >
+                  <span>{v.description}</span>
+                  {/* <span>{v.code}</span> */}
+                  {/* <span>
+                    {v.discount_type === "percent"
+                      ? `-${v.discount_value}%`
+                      : `-${v.discount_value.toLocaleString()}₫`}
+                  </span> */}
+
+                  <p>Hạn: {v.end_date} </p>
+                </button>
+              ))}
+            </div>
+
             <input
               className={styles.input}
-              placeholder="Nhập mã giảm giá"
+              placeholder="Mã voucher đang chọn"
               value={voucherCode}
-              onChange={(e) => setVoucherCode(e.target.value)}
+              readOnly
             />
-            <button onClick={handleApplyVoucher}>Áp dụng</button>
+
+            <button
+              className={styles.applyVoucherBtn}
+              onClick={handleApplyVoucher}
+              disabled={!voucherCode.trim()}
+            >
+              Áp dụng
+            </button>
+
             {voucherMessage && (
               <p style={{ color: voucherData ? "green" : "red" }}>
                 {voucherMessage}

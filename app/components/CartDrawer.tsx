@@ -4,7 +4,7 @@ import styles from "../css/CartDrawer.module.css";
 import { MdClose, MdDelete } from "react-icons/md";
 import { useCart } from "../context/CartConText";
 import Link from "next/link";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -13,7 +13,7 @@ interface CartDrawerProps {
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { cart, increaseQuantity, decreaseQuantity, removeFromCart } =
     useCart();
-
+  const router = useRouter();
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
@@ -89,15 +89,22 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             <span>TỔNG TIỀN:</span>
             <strong>{total.toLocaleString()}₫</strong>
           </div>
-          <p className={styles.warning}>
-            Giỏ hàng của bạn chưa đạt mức tối thiểu để thanh toán.
-          </p>
+          {cart.length === 0 && (
+            <p className={styles.warning}>
+              Giỏ hàng của bạn chưa đạt mức tối thiểu để thanh toán.
+            </p>
+          )}
+
           <button
             className={styles.checkoutBtn}
             onClick={() => router.push("/checkout")}
+            disabled={cart.length === 0}
           >
-            THANH TOÁN
+            THANH TOÁN 
           </button>
+          {/* <a className={styles.checkoutBtn} href="/checkout">
+            Thanh Toán
+          </a> */}
           <a className={styles.viewCart} href="/cart">
             Xem giỏ hàng
           </a>

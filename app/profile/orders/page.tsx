@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation"; // ✅ ĐÚNG cho App Router
 import styles from "./orders.module.css";
 import { Order } from "../../interface/order";
-import { getOrderByStatus } from "../../../lib/orderHistoryApi";
+import {
+  getOrderByStatus,
+  repayOrderApi,
+  requestReturnApi,
+} from "../../../lib/orderHistoryApi";
 import { cancelOrderApi } from "../../../lib/orderHistoryApi";
 
 const statusTabMap: Record<string, string> = {
@@ -23,6 +27,19 @@ const reverseStatusTabMap = Object.entries(statusTabMap).reduce(
   },
   {} as Record<string, string>
 );
+const handleRepay = async (unique_id: string) => {
+  try {
+    const redirectUrl = await repayOrderApi(unique_id, "MOMO", "VNPAY");
+    if (redirectUrl) {
+      window.location.href = redirectUrl;
+    } else {
+      alert("Không nhận được liên kết thanh toán");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Thanh toán lại thất bại");
+  }
+};
 
 const tabKeys = Object.values(statusTabMap);
 
@@ -31,18 +48,45 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [activeTab, setActiveTab] = useState<string>("chờ xác nhận");
   const [loading, setLoading] = useState<boolean>(false);
-
-  const cancelOrder = async (orderId: string) => {
+  const [canceling, setCanceling] = useState(false);
+  const [showCancelForm, setShowCancelForm] = useState<string | null>(null); // unique_id của đơn đang hủy
+  const [cancelReason, setCancelReason] = useState<string>("");
+  const [showReturnForm, setShowReturnForm] = useState<string | null>(null);
+  const [returnReason, setReturnReason] = useState<string>("");
+  const [returning, setReturning] = useState(false);
+  const handleReturnRequest = async (order_id: string, reason: string) => {
     try {
-      await cancelOrderApi(orderId);
+      setReturning(true);
+      await requestReturnApi(order_id, reason);
+      alert("Yêu cầu trả hàng đã được gửi");
+
+      const data = await getOrderByStatus("returned");
+      setOrders(data);
+      setShowReturnForm(null);
+      setReturnReason("");
+    } catch (error) {
+      console.error(error);
+      alert("Gửi yêu cầu trả hàng thất bại");
+    } finally {
+      setReturning(false);
+    }
+  };
+
+  const cancelOrder = async (unique_id: string, reason: string) => {
+    try {
+      setCanceling(true);
+      await cancelOrderApi(unique_id, reason); // truyền lý do vào API
       alert("Đã hủy đơn hàng");
 
-      // Chuyển sang tab "đã hủy"
-      const data = await getOrderByStatus("cancelled", 1, 10);
+      const data = await getOrderByStatus("cancelled");
       setOrders(data);
+      setShowCancelForm(null);
+      setCancelReason("");
     } catch (error) {
       console.error(error);
       alert("Hủy đơn hàng thất bại");
+    } finally {
+      setCanceling(false);
     }
   };
 
@@ -51,7 +95,7 @@ export default function OrdersPage() {
       try {
         setLoading(true);
         const statusParam = reverseStatusTabMap[activeTab];
-        const data = await getOrderByStatus(statusParam, 1, 10);
+        const data = await getOrderByStatus(statusParam);
         setOrders(data);
       } catch (error) {
         console.error("Lỗi lấy đơn hàng:", error);
@@ -92,7 +136,8 @@ export default function OrdersPage() {
             <div key={order.unique_id} className={styles.orderCard}>
               <h3>Mã đơn: {order.unique_id}</h3>
               <p>Trạng thái: {order.status}</p>
-              <p>Tổng tiền: {(order.total_price / 1000).toLocaleString()}₫</p>
+              <p>Tổng tiền: {order.total_price.toLocaleString()}₫</p>
+              <p>Phương thức thanh toán: {order.payment_method}</p>
               <ul className={styles.ulList}>
                 {order.products.map((p, idx) => (
                   <li key={idx}>
@@ -105,12 +150,51 @@ export default function OrdersPage() {
               <div className={styles.actions}>
                 {["ordered", "confirmed", "shipping"].includes(order.status) &&
                   order.can_cancel && (
-                    <button
-                      className={styles.actionButton}
-                      onClick={() => cancelOrder(order.unique_id)}
-                    >
-                      Hủy đơn
-                    </button>
+                    <>
+                      {order.can_pay && (
+                        <button
+                          className={styles.actionButton}
+                          onClick={() => handleRepay(order.unique_id)}
+                        >
+                          Thanh toán lại
+                        </button>
+                      )}
+                      {showCancelForm === order.unique_id ? (
+                        <div className={styles.cancelForm}>
+                          <textarea
+                            placeholder="Lý do hủy đơn..."
+                            value={cancelReason}
+                            onChange={(e) => setCancelReason(e.target.value)}
+                            className={styles.textarea}
+                          />
+                          <button
+                            className={styles.confirmCancelButton}
+                            onClick={() =>
+                              cancelOrder(order.unique_id, cancelReason)
+                            }
+                            disabled={canceling || !cancelReason.trim()}
+                          >
+                            {canceling ? "Đang xử lý..." : "Xác nhận hủy"}
+                          </button>
+                          <button
+                            className={styles.cancelButton}
+                            onClick={() => {
+                              setShowCancelForm(null);
+                              setCancelReason("");
+                            }}
+                          >
+                            Đóng
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          className={styles.actionButton}
+                          onClick={() => setShowCancelForm(order.unique_id)}
+                        >
+                          Hủy đơn
+                        </button>
+                      )}
+                    </>
                   )}
 
                 {/* Hiển thị nút "Xem chi tiết" cho tất cả trạng thái */}
@@ -122,6 +206,46 @@ export default function OrdersPage() {
                 >
                   Xem chi tiết
                 </button>
+                
+                {order.can_request_return && (
+                  <>
+                    {showReturnForm === order.unique_id ? (
+                      <div className={styles.cancelForm}>
+                        <textarea
+                          placeholder="Lý do trả hàng..."
+                          value={returnReason}
+                          onChange={(e) => setReturnReason(e.target.value)}
+                          className={styles.textarea}
+                        />
+                        <button
+                          className={styles.confirmCancelButton}
+                          onClick={() =>
+                            handleReturnRequest(order.unique_id, returnReason)
+                          }
+                          disabled={returning || !returnReason.trim()}
+                        >
+                          {returning ? "Đang xử lý..." : "Xác nhận trả hàng"}
+                        </button>
+                        <button
+                          className={styles.cancelButton}
+                          onClick={() => {
+                            setShowReturnForm(null);
+                            setReturnReason("");
+                          }}
+                        >
+                          Đóng
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        className={styles.actionButton}
+                        onClick={() => setShowReturnForm(order.unique_id)}
+                      >
+                        Trả hàng
+                      </button>
+                    )}
+                  </>
+                )}
 
                 {order.status === "delivered" && order.can_review && (
                   <button

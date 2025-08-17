@@ -79,8 +79,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             Địa chỉ giao nhận
           </Link>
           <Link
-            href="/profile/password"
-            className={pathname.includes("/password") ? styles.active : ""}
+            href="/profile/forgotpassword"
+            className={pathname.includes("/forgotpassword") ? styles.active : ""}
           >
             Đổi mật khẩu
           </Link>

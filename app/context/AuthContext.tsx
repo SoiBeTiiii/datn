@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useRef } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { userInfo } from "../../lib/authApi";
 import { useRouter } from "next/navigation";
 import authAxios from "@/lib/authAxios";
@@ -27,21 +27,30 @@ const AuthContext = createContext<AuthContextProps>({
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
-  const hasRedirected = useRef(false);
-useEffect(() => {
+
+ useEffect(() => {
+  const token = localStorage.getItem('authToken');
+  // ...existing code...
+if (token) {
   (async () => {
     try {
-      const data = await userInfo();
+      const data = await userInfo(); // <-- Remove user argument
       setUser(data);
     } catch (err) {
       setUser(null);
+      localStorage.removeItem('authToken');
     }
   })();
+} else {
+  setUser(null);
+}
+// ...existing code...
 }, []);
 
+
+  // Redirect if user is logged in and tries to access login page
   useEffect(() => {
-    if (user && !hasRedirected.current && window.location.pathname === "/login" ) {
-      hasRedirected.current = true;
+    if (user && window.location.pathname === "/login") {
       router.push("/"); 
     }
   }, [user, router]);
@@ -49,11 +58,12 @@ useEffect(() => {
   const logout = async () => {
     try {
       await authAxios.post("/logout");
+      localStorage.removeItem("authToken"); // Clear token after logout
     } catch (error) {
       console.error("logout fail", error);
     }
     setUser(null);
-    router.push("/");
+    router.push("/login"); // Ensure redirect after logout
   };
 
   return (

@@ -1,44 +1,21 @@
 import axios from 'axios';
 
-// Tạo instance axios cho các request liên quan đến xác thực
 const authAxios = axios.create({
-  baseURL: 'https://api-gateway-egomall.io.vn/api/v1/auth/', // Đổi thành domain thật nếu cần
-  withCredentials: true, // 🔥 Bắt buộc để gửi cookie (access & refresh token)
-  headers: {
-    Accept: 'application/json',
-    'Content-Type': 'application/json',
-  },
+  baseURL: 'http://localhost:8000/api/v1/auth', // Đảm bảo là đúng URL của backend
+  withCredentials: true, // Cho phép gửi cookie (nếu cần)
 });
 
-// Interceptor để tự động refresh token khi gặp lỗi 401
-  // authAxios.interceptors.response.use(
-  //   (response) => response,
-  //   async (error) => {
-  //     const originalRequest = error.config;
+// Dùng Optional Chaining để tránh lỗi khi headers là undefined
+authAxios.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken'); // Hoặc từ sessionStorage, tùy vào cách bạn lưu token
+  if (token && config.headers) { // Kiểm tra xem config.headers có tồn tại không
+    config.headers['Authorization'] = `Bearer ${token}`; // Gửi token trong header
+  }
+  console.log(config); // Kiểm tra header trong request
 
-  //     // Nếu lỗi là 401 và chưa retry
-  //     if (
-  //       error.response?.status === 401 &&
-  //       !originalRequest._retry
-  //     ) {
-  //       originalRequest._retry = true;
-
-  //       try {
-  //         // Gọi API refresh token (cookie sẽ tự được gửi)
-  //         await authAxios.post('refresh');
-
-  //         // Thử lại request gốc
-  //         return authAxios(originalRequest);
-  //       } catch (refreshError) {
-  //         console.error('❌ Refresh token thất bại:', refreshError);
-
-  //         // Tuỳ bạn: có thể logout, redirect, hoặc hiển thị thông báo
-  //         // Ví dụ: window.location.href = '/login';
-  //       }
-  //     }
-
-  //     return Promise.reject(error);
-  //   }
-  // );
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
 
 export default authAxios;

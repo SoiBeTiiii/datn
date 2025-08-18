@@ -1,5 +1,5 @@
 // app/login/LoginPage.tsx
-'use client';
+"use client";
 
 import { useState, useEffect } from "react";
 import styles from "./Login.module.css";
@@ -38,23 +38,24 @@ export default function LoginPage() {
     }
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+ const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    try {
-      const res = await login(email, password);
-      if ((res as { success: boolean }).success) {
-        const user = await userInfo();
-        setUser(user);
-        router.push(redirect);
-      } else {
-        alert((res as { message?: string }).message || "Đăng nhập thất bại");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Lỗi đăng nhập");
+  try {
+    const res = await login(email, password);
+    if (res.success) {
+      const user = await userInfo(); // Đảm bảo rằng bạn không bỏ qua đối số này nếu cần
+      setUser(user);  // setUser(user) có thể là nguyên nhân của lỗi
+      router.push(redirect);
+    } else {
+      alert(res.message || "Đăng nhập thất bại");
     }
-  };
+  } catch (err: any) {
+    console.error("Login error:", err);
+    alert(err.message || "Lỗi đăng nhập");
+  }
+};
+
 
   return (
     <div className={styles.container}>
@@ -62,7 +63,9 @@ export default function LoginPage() {
         <div className={styles.leftPanel}>
           <h1>Chào mừng trở lại 👋</h1>
           <p>Khám phá các sản phẩm làm đẹp mới nhất từ EGOMall!</p>
-          <Link href="/" passHref>Trang chủ</Link>
+          <Link href="/" passHref>
+            Trang chủ
+          </Link>
         </div>
 
         <form onSubmit={handleLogin} className={styles.form}>
@@ -85,20 +88,34 @@ export default function LoginPage() {
             required
           />
 
-          <button type="submit" className={styles.button}>Đăng nhập</button>
+          <button type="submit" className={styles.button}>
+            Đăng nhập
+          </button>
 
           <div className={styles.socials}>
-            <button type="button" className={styles.google} onClick={() => handleSocialLogin("google")}>
+            <button
+              type="button"
+              className={styles.google}
+              onClick={() => handleSocialLogin("google")}
+            >
               <FaGoogle /> Google
             </button>
-            <button type="button" className={styles.facebook} onClick={() => handleSocialLogin("facebook")}>
+            <button
+              type="button"
+              className={styles.facebook}
+              onClick={() => handleSocialLogin("facebook")}
+            >
               <FaFacebookF /> Facebook
             </button>
           </div>
 
           <div className={styles.links}>
-            <Link href="/forgot-password" passHref>Quên mật khẩu?</Link>
-            <Link href="/register" passHref>Tạo tài khoản</Link>
+            <Link href="/forgot-password" passHref>
+              Quên mật khẩu?
+            </Link>
+            <Link href="/register" passHref>
+              Tạo tài khoản
+            </Link>
           </div>
         </form>
       </div>

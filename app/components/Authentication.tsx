@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 const Authentication = () => {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [token, setToken] = useState<string | null>(null); // Dùng state để lưu token
 
   useEffect(() => {
     setIsMounted(true); // Đảm bảo chỉ chạy trên client
@@ -15,16 +16,21 @@ const Authentication = () => {
   useEffect(() => {
     if (isMounted) {
       const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get('token');
-      
-      if (token) {
+      const tokenFromUrl = urlParams.get('token');
+
+      if (tokenFromUrl) {
         // Lưu token vào localStorage
-        localStorage.setItem('authToken', token);
-        
-        // Chuyển hướng người dùng về trang chính sau khi lưu token
-        router.push('/');
+        localStorage.setItem('authToken', tokenFromUrl);
+        setToken(tokenFromUrl); // Cập nhật state token ngay lập tức
+        router.push('/'); // Chuyển hướng người dùng
       } else {
-        alert('Không có token trong URL');
+        // Nếu không có token trong URL, kiểm tra trong localStorage
+        const storedToken = localStorage.getItem('authToken');
+        if (storedToken) {
+          setToken(storedToken); // Cập nhật lại token từ localStorage
+        } else {
+          alert('Không có token trong URL và localStorage');
+        }
       }
     }
   }, [isMounted, router]);
@@ -33,7 +39,11 @@ const Authentication = () => {
 
   return (
     <div>
-      <p>Đang xử lý đăng nhập...</p>
+      {token ? (
+        <p>Đăng nhập thành công, Token: {token}</p>
+      ) : (
+        <p>Đang xử lý đăng nhập...</p>
+      )}
     </div>
   );
 };

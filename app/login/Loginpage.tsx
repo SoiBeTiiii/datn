@@ -8,6 +8,7 @@ import Link from "next/link";
 import { getSocialRedirectUrl, login, userInfo } from "../../lib/authApi";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import authAxios from "../../lib/authAxios";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -24,19 +25,23 @@ export default function LoginPage() {
 
   if (!mounted) return null;
 
-  const handleSocialLogin = async (provider: "google" | "facebook") => {
-    try {
-      const url = await getSocialRedirectUrl(provider);
-      if (url) {
-        window.location.href = url;
-      } else {
-        alert("Không lấy được URL đăng nhập từ server");
-      }
-    } catch (err) {
-      alert("Lỗi khi gọi API social login");
-      console.error(err);
+ const handleSocialLogin = async (provider: "google" | "facebook") => {
+  try {
+    const response = await authAxios.get<{ data: { url: string } }>(
+      `/redirect/${provider}`
+    );
+    const redirectUrl = response.data.data.url;
+
+    if (redirectUrl) {
+      window.location.href = redirectUrl;
+    } else {
+      alert("Không lấy được URL đăng nhập từ server");
     }
-  };
+  } catch (error) {
+    console.error("Lỗi khi gọi API social login", error);
+    alert("Lỗi khi gọi API social login");
+  }
+};
 
  const handleLogin = async (e: React.FormEvent) => {
   e.preventDefault();

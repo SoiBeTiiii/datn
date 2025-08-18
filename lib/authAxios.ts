@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const authAxios = axios.create({
-  baseURL: 'http://localhost:8000/api/v1/auth', // Đảm bảo là đúng URL của backend
+  // baseURL: 'http://localhost:8000/api/v1/auth',
+  baseURL: 'https://api-gateway-egomall.io.vn/api/v1/auth',
   withCredentials: true, // Cho phép gửi cookie (nếu cần)
 });
 

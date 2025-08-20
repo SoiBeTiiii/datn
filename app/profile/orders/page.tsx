@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation"; // ✅ ĐÚNG cho App Router
 import styles from "./orders.module.css";
 import { Order } from "../../interface/order";
+
 import {
   getOrderByStatus,
   repayOrderApi,
@@ -27,19 +28,6 @@ const reverseStatusTabMap = Object.entries(statusTabMap).reduce(
   },
   {} as Record<string, string>
 );
-const handleRepay = async (unique_id: string) => {
-  try {
-    const redirectUrl = await repayOrderApi(unique_id, "MOMO", "VNPAY");
-    if (redirectUrl) {
-      window.location.href = redirectUrl;
-    } else {
-      alert("Không nhận được liên kết thanh toán");
-    }
-  } catch (error) {
-    console.error(error);
-    alert("Thanh toán lại thất bại");
-  }
-};
 
 const tabKeys = Object.values(statusTabMap);
 
@@ -54,6 +42,23 @@ export default function OrdersPage() {
   const [showReturnForm, setShowReturnForm] = useState<string | null>(null);
   const [returnReason, setReturnReason] = useState<string>("");
   const [returning, setReturning] = useState(false);
+  const [showPaymentForm, setShowPaymentForm] = useState<string | null>(null); // Popup form thanh toán
+  const [paymentMethod, setPaymentMethod] = useState<string>("MOMO"); // Phương thức thanh toán mặc định
+
+  const handleRepay = async (unique_id: string, method: string) => {
+    try {
+      const redirectUrl = await repayOrderApi(unique_id, method);
+      if (redirectUrl) {
+        window.location.href = redirectUrl; // Chuyển hướng đến trang thanh toán
+      } else {
+        alert("Không nhận được liên kết thanh toán");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Thanh toán lại thất bại");
+    }
+  };
+
   const handleReturnRequest = async (order_id: string, reason: string) => {
     try {
       setReturning(true);
@@ -75,7 +80,7 @@ export default function OrdersPage() {
   const cancelOrder = async (unique_id: string, reason: string) => {
     try {
       setCanceling(true);
-      await cancelOrderApi(unique_id, reason); // truyền lý do vào API
+      await cancelOrderApi(unique_id, reason); // Truyền lý do hủy vào API
       alert("Đã hủy đơn hàng");
 
       const data = await getOrderByStatus("cancelled");
@@ -114,9 +119,7 @@ export default function OrdersPage() {
         {tabKeys.map((tab) => (
           <button
             key={tab}
-            className={`${styles.tabButton} ${
-              activeTab === tab ? styles.active : ""
-            }`}
+            className={`${styles.tabButton} ${activeTab === tab ? styles.active : ""}`}
             onClick={() => setActiveTab(tab)}
           >
             {tab}
@@ -148,19 +151,52 @@ export default function OrdersPage() {
               </ul>
 
               <div className={styles.actions}>
-                {["ordered", "confirmed", "shipping"].includes(order.status) &&
-                  order.can_cancel && (
-                    <>
-                      {order.can_pay && (
-                        <button
-                          className={styles.actionButton}
-                          onClick={() => handleRepay(order.unique_id)}
-                        >
-                          Thanh toán lại
-                        </button>
-                      )}
-                      {showCancelForm === order.unique_id ? (
-                        <div className={styles.cancelForm}>
+                {["ordered", "confirmed", "shipping"].includes(order.status) && order.can_cancel && (
+                  <>
+                    {/* Ẩn nút khi form thanh toán lại được hiển thị */}
+                    {showPaymentForm !== order.unique_id && order.can_pay && (
+                      <button
+                        className={styles.actionButton}
+                        onClick={() => setShowPaymentForm(order.unique_id)} // Hiển thị form thanh toán lại
+                      >
+                        Thanh toán lại
+                      </button>
+                    )}
+
+                    {/* Popup thanh toán lại */}
+                    {showPaymentForm === order.unique_id && (
+                      <div className={styles.popupOverlay}>
+                        <div className={styles.popup}>
+                          <h3>Chọn phương thức thanh toán:</h3>
+                          <select
+                            className={styles.select}
+                            value={paymentMethod}
+                            onChange={(e) => setPaymentMethod(e.target.value)}
+                          >
+                            <option className={styles.option} value="MOMO">MOMO</option>
+                            <option className={styles.option} value="VNPAY">VNPAY</option>
+                            <option className={styles.option} value="COD">COD</option>
+                          </select>
+                          <button
+                            className={styles.confirmButton}
+                            onClick={() => handleRepay(order.unique_id, paymentMethod)}
+                          >
+                            Xác nhận thanh toán lại
+                          </button>
+                          <button
+                            className={styles.cancelButton}
+                            onClick={() => setShowPaymentForm(null)} // Đóng form
+                          >
+                            Đóng
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Form hủy đơn */}
+                    {showCancelForm === order.unique_id ? (
+                      <div className={styles.popupOverlay}>
+                        <div className={styles.popup}>
                           <textarea
                             placeholder="Lý do hủy đơn..."
                             value={cancelReason}
@@ -169,9 +205,7 @@ export default function OrdersPage() {
                           />
                           <button
                             className={styles.confirmCancelButton}
-                            onClick={() =>
-                              cancelOrder(order.unique_id, cancelReason)
-                            }
+                            onClick={() => cancelOrder(order.unique_id, cancelReason)}
                             disabled={canceling || !cancelReason.trim()}
                           >
                             {canceling ? "Đang xử lý..." : "Xác nhận hủy"}
@@ -186,55 +220,55 @@ export default function OrdersPage() {
                             Đóng
                           </button>
                         </div>
-                      ) : (
-                        <button
-                          className={styles.actionButton}
-                          onClick={() => setShowCancelForm(order.unique_id)}
-                        >
-                          Hủy đơn
-                        </button>
-                      )}
-                    </>
-                  )}
+                      </div>
+                    ) : (
+                      <button
+                        className={styles.actionButton}
+                        onClick={() => setShowCancelForm(order.unique_id)}
+                      >
+                        Hủy đơn
+                      </button>
+                    )}
+                  </>
+                )}
 
-                {/* Hiển thị nút "Xem chi tiết" cho tất cả trạng thái */}
+                {/* Nút "Xem chi tiết" */}
                 <button
                   className={styles.actionButton}
-                  onClick={() =>
-                    router.push(`/profile/orders/${order.unique_id}`)
-                  } // ✅ CHÍNH XÁC
+                  onClick={() => router.push(`/profile/orders/${order.unique_id}`)}
                 >
                   Xem chi tiết
                 </button>
-                
+
+                {/* Xử lý trả hàng */}
                 {order.can_request_return && (
                   <>
                     {showReturnForm === order.unique_id ? (
-                      <div className={styles.cancelForm}>
-                        <textarea
-                          placeholder="Lý do trả hàng..."
-                          value={returnReason}
-                          onChange={(e) => setReturnReason(e.target.value)}
-                          className={styles.textarea}
-                        />
-                        <button
-                          className={styles.confirmCancelButton}
-                          onClick={() =>
-                            handleReturnRequest(order.unique_id, returnReason)
-                          }
-                          disabled={returning || !returnReason.trim()}
-                        >
-                          {returning ? "Đang xử lý..." : "Xác nhận trả hàng"}
-                        </button>
-                        <button
-                          className={styles.cancelButton}
-                          onClick={() => {
-                            setShowReturnForm(null);
-                            setReturnReason("");
-                          }}
-                        >
-                          Đóng
-                        </button>
+                      <div className={styles.popupOverlay}>
+                        <div className={styles.popup}>
+                          <textarea
+                            placeholder="Lý do trả hàng..."
+                            value={returnReason}
+                            onChange={(e) => setReturnReason(e.target.value)}
+                            className={styles.textarea}
+                          />
+                          <button
+                            className={styles.confirmCancelButton}
+                            onClick={() => handleReturnRequest(order.unique_id, returnReason)}
+                            disabled={returning || !returnReason.trim()}
+                          >
+                            {returning ? "Đang xử lý..." : "Xác nhận trả hàng"}
+                          </button>
+                          <button
+                            className={styles.cancelButton}
+                            onClick={() => {
+                              setShowReturnForm(null);
+                              setReturnReason("");
+                            }}
+                          >
+                            Đóng
+                          </button>
+                        </div>
                       </div>
                     ) : (
                       <button
@@ -245,21 +279,6 @@ export default function OrdersPage() {
                       </button>
                     )}
                   </>
-                )}
-
-                {order.status === "delivered" && order.can_review && (
-                  <button
-                    className={styles.actionButton}
-                    onClick={() =>
-                      router.push(`/profile/orders/${order.unique_id}`)
-                    } // ✅ CHÍNH XÁC
-                  >
-                    Đánh giá sản phẩm
-                  </button>
-                )}
-
-                {order.status === "returned" && order.can_request_return && (
-                  <button className={styles.actionButton}>Trả hàng</button>
                 )}
               </div>
             </div>

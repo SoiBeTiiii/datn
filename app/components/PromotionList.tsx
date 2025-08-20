@@ -16,83 +16,87 @@ export default function ProductListSlider() {
   const [page, setPage] = useState(0);
   const ITEMS_PER_PAGE = 4;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [productData, promoData] = await Promise.all([
-          fetchProducts(),
-          fetchPromotions(),
-        ]);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const [productData, promoData] = await Promise.all([
+        fetchProducts(),
+        fetchPromotions(),
+      ]);
 
-        const parentIds = new Set<number>();
+      const parentIds = new Set<number>();
 
-        Object.values(promoData).forEach((promo: any) => {
+      // Xử lý khuyến mãi
+      Object.values(promoData).forEach((promo: any) => {
+        if (promo.type === "variant") {
+          parentIds.add(promo.parentProduct);
+        } else if (promo.type === "product") {
+          // Xử lý type product: Kiểm tra productId trong promoData với các sản phẩm trong productData
+          const matchedProduct = productData.find(
+            (product: any) => product.id === promo.productId
+          );
+          if (matchedProduct) {
+            parentIds.add(matchedProduct.id);
+          }
+        }
+      });
+
+      // Lọc các sản phẩm theo parentIds
+      const filteredProducts = productData.filter((product: any) =>
+        parentIds.has(product.id)
+      );
+
+      // Làm giàu thông tin cho các sản phẩm đã lọc
+      const enriched = filteredProducts.map((product: any) => {
+        const matchingPromo = Object.values(promoData).find((promo: any) => {
           if (promo.type === "variant") {
-            parentIds.add(promo.parentProduct);
+            return promo.parentProduct === product.id;
           } else if (promo.type === "product") {
-            for (const product of productData) {
-              const matchedVariant = product.variants?.find(
-                (v: any) => v.id === promo.variantId
-              );
-              if (matchedVariant) {
-                parentIds.add(product.id);
-                break;
-              }
-            }
+            return promo.productId === product.id; // So khớp productId của khuyến mãi với sản phẩm
           }
+          return false;
         });
 
-        const filteredProducts = productData.filter((product: any) =>
-          parentIds.has(product.id)
-        );
-
-        const enriched = filteredProducts.map((product: any) => {
-          const matchingPromo = Object.values(promoData).find((promo: any) => {
-            if (promo.type === "variant") {
-              return promo.parentProduct === product.id;
-            } else if (promo.type === "product") {
-              return product.variants?.some(
-                (v: any) => v.id === promo.variantId
-              );
+        // Tạo label từ condition
+        let promotionLabel = "";
+        const cond = matchingPromo?.conditions;
+        if (cond) {
+          if (cond.type === "discount") {
+            if (cond.discountType === "percentage") {
+              promotionLabel = `Giảm ${cond.value}%`;
+            } else if (cond.discountType === "fixed_amount") {
+              promotionLabel = `Giảm ${Number(cond.value).toLocaleString()}đ`;
             }
-            return false;
-          });
-
-          // Tạo label từ condition
-          let promotionLabel = "";
-          const cond = matchingPromo?.conditions;
-          if (cond) {
-            if (cond.type === "discount") {
-              if (cond.discountType === "percentage") {
-                promotionLabel = `Giảm ${cond.value}%`;
-              } else if (cond.discountType === "fixed_amount") {
-                promotionLabel = `Giảm ${Number(cond.value).toLocaleString()}đ`;
-              }
-            } else if (cond.type === "buy_get") {
-              promotionLabel = `Mua ${cond.buyQuantity} tặng ${cond.getQuantity}`;
-            }
+          } else if (cond.type === "buy_get") {
+            promotionLabel = `Mua ${cond.buyQuantity} tặng ${cond.getQuantity}`;
           }
+        }
 
-          return {
-            ...product,
-            promotionName: matchingPromo?.promotionName,
-            endDate: matchingPromo?.endDate,
-            sold:
-              matchingPromo && "soldQuantity" in matchingPromo
-                ? matchingPromo.soldQuantity
-                : product.sold,
-            promotionLabel,
-          };
-        });
+        // Lấy tất cả các biến thể của sản phẩm
+        const variants = product.variants || [];
 
-        setProducts(enriched);
-      } catch (err) {
-        console.error("Lỗi khi fetch:", err);
-      }
-    };
+        return {
+          ...product,
+          promotionName: matchingPromo?.promotionName,
+          endDate: matchingPromo?.endDate,
+          sold:
+            matchingPromo && "soldQuantity" in matchingPromo
+              ? matchingPromo.soldQuantity
+              : product.sold,
+          promotionLabel,
+          variants, // Thêm biến thể của sản phẩm vào kết quả
+        };
+      });
 
-    fetchData();
-  }, []);
+      setProducts(enriched); // Cập nhật sản phẩm đã làm giàu
+    } catch (err) {
+      console.error("Lỗi khi fetch:", err);
+    }
+  };
+
+  fetchData();
+}, []);
+
 
   const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
   const next = () => setPage((prev) => (prev + 1) % totalPages);

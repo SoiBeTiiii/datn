@@ -1,67 +1,95 @@
-import styles from '../css/Footer.module.css';
-import Image from 'next/image';
-import { FaFacebookF, FaInstagram, FaYoutube } from 'react-icons/fa';
+'use client';
 
-export default function Footer() {
+import { useEffect, useState } from 'react';
+import styles from '../css/Footer.module.css';
+import { getPublicSettings, PublicSettings } from '../../lib/footerApi';
+
+const Footer = () => {
+  const [settings, setSettings] = useState<PublicSettings | null>(null);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const data = await getPublicSettings();  // Gọi API lấy settings
+      setSettings(data);
+    };
+
+    fetchSettings();  // Gọi hàm fetch settings khi component mount
+  }, []);  // Chạy 1 lần khi component mount
+
   return (
     <footer className={styles.footer}>
-      <div className={styles.container}>
+      <div className={styles.contact}>
+        <div className={styles.address}>
+          {settings?.site_logo && (
+            <img src={settings.site_logo} alt={settings.site_name} className={styles.logoImage} />
+          )}
+          <p>{settings?.site_address || 'Địa chỉ chưa có'}</p>
+          <p>{settings?.hotline || 'Hotline đang cập nhật'}</p>
+          <p>{settings?.contact_email || 'Email đang cập nhật'}</p>
+        </div>
 
-        <div className={styles.column}>
-          <h3>Về chúng tôi</h3>
-          <strong>EGOMall</strong>
-          <p>
-            EGOMall - Cửa hàng chuyên phân phối các sản phẩm làm đẹp từ các thương hiệu hàng đầu. 
-            Thuộc quyền sở hữu của Công ty TNHH EGOMALL. GPKD số: 12345678910 do Sở KHĐT TP.HCM cấp ngày 31/02/2025
-          </p>
-          <p>📍 Địa chỉ: 2133 Nguyễn Cảnh Tay, P. Nguyễn Cư Trinh, Q.1, TP.HCM</p>
-          <p>📞 SĐT: 0090090999</p>
-          <p>✉ Email: EGOMall.vn@gmail.com</p>
-          <div className={styles.socials}>
-            <FaFacebookF />
-            <FaYoutube />
-            <FaInstagram />
+        <div className={styles.links}>
+          <div className={styles.column}>
+            <h4 className={styles.heading}>Help</h4>
+            <ul>
+              <li>Search</li>
+              <li>Help</li>
+              <li>Information</li>
+              <li>Privacy Policy</li>
+              <li>Shipping Details</li>
+            </ul>
           </div>
-        </div>
 
-        <div className={styles.column}>
-          <h4>Chính sách</h4>
-          <ul>
-            <li>Giới Thiệu</li>
-            <li>Điều khoản dịch vụ</li>
-            <li>Vận Chuyển & Giao Nhận</li>
-            <li>Đổi Trả và Bảo Hành</li>
-            <li>Phương Thức Thanh Toán</li>
-            <li>Chính sách bảo mật</li>
-            <li>Thông Tin Hàng Hoá</li>
-            <li>Theo Dõi Đơn Hàng</li>
-            <li>Liên hệ</li>
-            <li>Tìm kiếm</li>
-          </ul>
-        </div>
-
-        <div className={styles.column}>
-          <h4>Hỗ trợ khách hàng</h4>
-          <ul>
-            <li>Trang chủ</li>
-            <li>Sản phẩm</li>
-            <li>Blog</li>
-          </ul>
-        </div>
-
-        <div className={styles.column}>
-          <h4>Đăng ký nhận tin</h4>
-          <div className={styles.subscribe}>
-            <input type="email" placeholder="Nhập địa chỉ email" />
-            <button>Đăng ký</button>
+          <div className={styles.column}>
+            <h4 className={styles.heading}>Support</h4>
+            <ul>
+              <li>About us</li>
+              <li>Careers</li>
+              <li>Deliveries</li>
+              <li>Refund Requests</li>
+              <li>Contact us</li>
+            </ul>
           </div>
-        
-        
+
+          <div className={styles.column}>
+            <h4 className={styles.heading}>Follow us</h4>
+            <ul>
+              {settings?.facebook_url && (
+                <li>
+                  <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer">Facebook</a>
+                </li>
+              )}
+              {settings?.youtube_url && (
+                <li>
+                  <a href={settings.youtube_url} target="_blank" rel="noopener noreferrer">YouTube</a>
+                </li>
+              )}
+              {settings?.tiktok_url && (
+                <li>
+                  <a href={settings.tiktok_url} target="_blank" rel="noopener noreferrer">TikTok</a>
+                </li>
+              )}
+              {settings?.instagram_url && (
+                <li>
+                  <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer">Instagram</a>
+                </li>
+              )}
+              {settings?.zalo_url && (
+                <li>
+                  <a href={settings.zalo_url} target="_blank" rel="noopener noreferrer">Zalo</a>
+                </li>
+              )}
+            </ul>
+          </div>
         </div>
       </div>
-      <div className={styles.copyright}>
-        © Bản quyền thuộc về EGOMall
+      <div className={styles.footerBottom}>
+        <p>
+          &copy; {new Date().getFullYear()} {settings?.site_name || 'EgoMall'}. All rights reserved.
+        </p>
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;

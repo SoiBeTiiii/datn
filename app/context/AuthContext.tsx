@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { userInfo } from "../../lib/authApi";
 import { useRouter } from "next/navigation";
 import authAxios from "@/lib/authAxios";
-
+import { toast } from "react-toastify";
 interface User {
   name: string;
   email: string;
@@ -63,7 +63,8 @@ if (token) {
       console.error("logout fail", error);
     }
     setUser(null);
-    router.push("/login"); // Ensure redirect after logout
+    toast.success("Đăng xuất thành công");
+    router.push("/login");
   };
 
   return (

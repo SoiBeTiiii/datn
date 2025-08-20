@@ -40,6 +40,7 @@ interface CartContextType {
   removeFromCart: (variantId: number, options: CartOption[]) => void;
   increaseQuantity: (variantId: number, options: CartOption[]) => void;
   decreaseQuantity: (variantId: number, options: CartOption[]) => void;
+  clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -55,6 +56,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const parsed: CartProduct[] = JSON.parse(stored);
       cartRef.current = parsed.filter((item) => !item.isGift);
       applyGiftPromotions(cartRef.current);
+      setCart(parsed);
     }
   }, []);
 
@@ -62,6 +64,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cart));
   }, [cart]);
 
+  const clearCart = () => {
+    // Xóa dữ liệu trong localStorage
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+
+    // Cập nhật lại state của cart
+    setCart([]);
+    cartRef.current = []; // Đảm bảo cartRef cũng được reset
+  };
   const areOptionsEqual = (a: CartOption[], b: CartOption[]) =>
     JSON.stringify(a) === JSON.stringify(b);
 
@@ -122,54 +132,53 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
- const applyGiftPromotions = async (userCart: CartProduct[]) => {
-  try {
-    const promotions = await fetchPromotions();
-    let updatedCart = [...userCart].filter((item) => !item.isGift); 
+  const applyGiftPromotions = async (userCart: CartProduct[]) => {
+    try {
+      const promotions = await fetchPromotions();
+      let updatedCart = [...userCart].filter((item) => !item.isGift);
 
-    const newGifts: CartProduct[] = [];
+      const newGifts: CartProduct[] = [];
 
-    for (const item of updatedCart) {
-      const promo = promotions[`variant_${item.variantId}`];
+      for (const item of updatedCart) {
+        const promo = promotions[`variant_${item.variantId}`];
 
-      if (
-        promo &&
-        promo.conditions?.type === "buy_get" &&
-        item.quantity >= promo.conditions.buyQuantity
-      ) {
-        const giftVariantId = promo.conditions.giftProductVariantId;
-        const giftQuantity =
-          Math.floor(item.quantity / promo.conditions.buyQuantity) *
-          promo.conditions.getQuantity;
+        if (
+          promo &&
+          promo.conditions?.type === "buy_get" &&
+          item.quantity >= promo.conditions.buyQuantity
+        ) {
+          const giftVariantId = promo.conditions.giftProductVariantId;
+          const giftQuantity =
+            Math.floor(item.quantity / promo.conditions.buyQuantity) *
+            promo.conditions.getQuantity;
 
-        const giftData = await fetchVariantById(giftVariantId);
+          const giftData = await fetchVariantById(giftVariantId);
 
-        newGifts.push({
-          variantId: giftData.variantId,
-          quantity: giftQuantity,
-          price: 0,
-          name: `🎁 ${giftData.name}`,
-          id: giftData.variantId,
-          productId: giftData.productId,
-          originalPrice: giftData.originalPrice,
-          final_price_discount: 0,
-          sale_price: null,
-          promotion: null,
-          options: [],
-          isGift: true,
-          image: giftData.image?.trim() || "/images/default-gift.jpg",
-          discount: 0
-        });
+          newGifts.push({
+            variantId: giftData.variantId,
+            quantity: giftQuantity,
+            price: 0,
+            name: `🎁 ${giftData.name}`,
+            id: giftData.variantId,
+            productId: giftData.productId,
+            originalPrice: giftData.originalPrice,
+            final_price_discount: 0,
+            sale_price: null,
+            promotion: null,
+            options: [],
+            isGift: true,
+            image: giftData.image?.trim() || "/images/default-gift.jpg",
+            discount: 0,
+          });
+        }
       }
+
+      const fullCart = [...updatedCart, ...newGifts];
+      setCart(fullCart);
+    } catch (error) {
+      console.error("Lỗi khi áp dụng quà tặng:", error);
     }
-
-    const fullCart = [...updatedCart, ...newGifts];
-    setCart(fullCart);
-  } catch (error) {
-    console.error("Lỗi khi áp dụng quà tặng:", error);
-  }
-};
-
+  };
 
   return (
     <CartContext.Provider
@@ -179,6 +188,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         removeFromCart,
         increaseQuantity,
         decreaseQuantity,
+        clearCart
       }}
     >
       {children}

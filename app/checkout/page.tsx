@@ -278,12 +278,12 @@ export default function CheckoutPage() {
       const res = (await checkoutOrder(payload)) as {
         data?: { redirect_url?: string };
       };
-      console.log("Checkout response:", res);
 
       if (paymentMethod === "MOMO" || paymentMethod === "VNPAY") {
         const redirectUrl = res?.data?.redirect_url;
         if (redirectUrl) {
           toast.success("✅ Đang chuyển hướng đến cổng thanh toán...");
+          localStorage.removeItem("egomall_cart");
           window.location.href = redirectUrl; // redirect sang trang thanh toán
           return; // dừng lại, không chạy tiếp
         } else {

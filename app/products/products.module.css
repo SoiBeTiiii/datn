@@ -13,6 +13,31 @@
   text-align: center;
   padding: 6px 0;
 }
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  gap: 8px;
+  font-family: "Roboto", sans-serif;
+}
+.page-btn {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 4px;
+}
+.page-btn:hover {
+  background: #f9f9f9;
+}
+
+.page-btn.active {
+  background: #f55fa3;
+  color: white;
+  border-color: #f55fa3;
+}
 
 .marquee span {
   display: inline-block;

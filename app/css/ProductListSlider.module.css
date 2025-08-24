@@ -16,6 +16,21 @@
   font-size: 35px;
   text-align: center;
 }
+.sliderContainer{
+  overflow:hidden;
+  position:relative;
+  width: 100%;
+}
+
+.sliderTrack {
+  display: flex;
+}
+
+.slide {
+  flex: 0 0 25%; /* 4 items per page = 100% / 4 */
+  box-sizing: border-box;
+  padding: 0 10px;
+}
 
 .grid {
   display: grid;
@@ -37,108 +52,52 @@
   border-radius: 50%;
   padding: 8px 12px;
   cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 .arrow:hover {
   background: #d96e6e;
 }
-@media (max-width: 1600px) {
-  .wrapper {
-    max-width: 1300px;
+@media screen and (max-width: 1024px) {
+  .slide {
+    flex: 0 0 33.33%;
   }
-
-  .grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (max-width: 1280px) {
-  .wrapper {
-    max-width: 1100px;
-  }
-
   .grid {
     grid-template-columns: repeat(3, 1fr);
   }
-}
-
-@media (max-width: 1024px) {
-  .wrapper {
-    max-width: 950px;
-  }
-
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .title {
     font-size: 28px;
   }
-
-  .arrow {
-    font-size: 18px;
-    padding: 6px 10px;
-  }
 }
 
-/* ✅ iPad mini (768px) */
-@media (max-width: 768px) {
-  .wrapper {
-    max-width: 700px;
-    padding: 16px;
+/* Mobile lớn - Hiển thị 2 sản phẩm */
+@media screen and (max-width: 768px) {
+  .slide {
+    flex: 0 0 50%;
   }
-
   .grid {
     grid-template-columns: repeat(2, 1fr);
   }
-
   .title {
     font-size: 24px;
   }
-
-  .arrow {
-    font-size: 16px;
-    padding: 5px 9px;
+  .wrapper {
+    padding: 15px;
   }
 }
 
-/* ✅ iPhone 13/14 (390px) */
-@media (max-width: 420px) {
-  .wrapper {
-    max-width: 100%;
-    padding: 12px;
+/* Mobile nhỏ - Hiển thị 1 sản phẩm */
+@media screen and (max-width: 480px) {
+  .slide {
+    flex: 0 0 100%;
   }
-
   .grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(1, 1fr);
   }
-
   .title {
     font-size: 20px;
   }
-
   .arrow {
-    font-size: 14px;
-    padding: 4px 8px;
-  }
-}
-
-/* ✅ iPhone SE (320px) */
-@media (max-width: 360px) {
-  .wrapper {
-    padding: 10px;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .title {
+    padding: 6px 10px;
     font-size: 18px;
-  }
-
-  .arrow {
-    font-size: 12px;
-    padding: 3px 6px;
   }
 }

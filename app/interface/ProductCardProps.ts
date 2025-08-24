@@ -12,9 +12,8 @@ export default interface ProductCardProps {
   discount?: number;
   sold?: number;
   average_rating?: number;
-    rating?: any;
       type: any;
-  type_skin: any;
+  type_skin: string;
 
 }
 

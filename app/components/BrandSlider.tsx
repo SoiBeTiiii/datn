@@ -1,71 +1,70 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import styles from "../css/BrandSlider.module.css";
 import Image from "next/image";
 import fetchBrands from "@/lib/brandApi";
 import BrandProps from "../interface/brand";
 import Link from "next/link";
 
-const ITEMS_PER_SLIDE = 7;
+const ITEMS_PER_SLIDE = 6;
+const AUTO_PLAY_DELAY = 3000; // 3s
 
 export default function BrandSlider() {
   const [brands, setBrands] = useState<BrandProps[]>([]);
-  const [index, setIndex] = useState(0);
+  const [slideIndex, setSlideIndex] = useState(0);
+  const autoSlideRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     fetchBrands()
-      .then((result) => {
-        console.log("✅ Fetched brands:", result);
-        setBrands(result);
-      })
-      .catch((err) => {
-        console.error("❌ Error fetching brands:", err);
-      });
+      .then((result) => setBrands(result))
+      .catch((err) => console.error("Error fetching brands:", err));
   }, []);
 
-  const next = () => {
-    setIndex((prev) =>
-      prev + ITEMS_PER_SLIDE >= brands.length ? 0 : prev + ITEMS_PER_SLIDE
-    );
-  };
-
-  const prev = () => {
-    setIndex((prev) =>
-      prev - ITEMS_PER_SLIDE < 0
-        ? Math.max(0, brands.length - ITEMS_PER_SLIDE)
-        : prev - ITEMS_PER_SLIDE
-    );
-  };
-
-  const visibleBrands = brands.slice(index, index + ITEMS_PER_SLIDE);
-
-  // Calculate the total number of slides based on the brands array
   const totalSlides = Math.ceil(brands.length / ITEMS_PER_SLIDE);
+
+  const nextSlide = () => {
+    setSlideIndex((prev) => (prev + 1) % totalSlides);
+  };
+
+  const prevSlide = () => {
+    setSlideIndex((prev) => (prev - 1 + totalSlides) % totalSlides);
+  };
+
+  // Auto play
+  useEffect(() => {
+    if (brands.length === 0) return;
+    autoSlideRef.current = setInterval(nextSlide, AUTO_PLAY_DELAY);
+    return () => {
+      if (autoSlideRef.current) clearInterval(autoSlideRef.current);
+    };
+  }, [brands]);
 
   return (
     <div className={styles.wrapper}>
       <h2 className={styles.title}>THƯƠNG HIỆU NỔI BẬT</h2>
       <div className={styles.sliderWrapper}>
+        <button className={styles.prevBtn} onClick={prevSlide}>
+          ◀
+        </button>
         <div className={styles.sliderContainer}>
           <div
             className={styles.slider}
             style={{
-              transform: `translateX(-${index * 100}%)`,
+              transform: `translateX(-${slideIndex * 100}%)`,
+              transition: 'transform 0.6s ease-in-out',
             }}
           >
-            {Array.from({ length: totalSlides }).map((_, slideIndex) => (
-              <div className={styles.slide} key={slideIndex}>
+            {Array.from({ length: totalSlides }).map((_, i) => (
+              <div className={styles.slide} key={i}>
                 {brands
-                  .slice(
-                    slideIndex * ITEMS_PER_SLIDE,
-                    slideIndex * ITEMS_PER_SLIDE + ITEMS_PER_SLIDE
-                  )
-                  .map((brand, i) => (
-                    <Link href={`/products?brand=${brand.slug}`} key={i}>
+                  .slice(i * ITEMS_PER_SLIDE, i * ITEMS_PER_SLIDE + ITEMS_PER_SLIDE)
+                  .map((brand, idx) => (
+                    <Link href={`/products?brand=${brand.slug}`} key={idx}>
                       <div className={styles.brand}>
                         <Image
+                          className={styles.brandImage}
                           src={brand.logo || "/images/brands/default.png"}
-                          alt={brand.name || `Brand ${i}`}
+                          alt={brand.name || `Brand ${idx}`}
                           fill
                           style={{ objectFit: "contain" }}
                         />
@@ -76,75 +75,10 @@ export default function BrandSlider() {
             ))}
           </div>
         </div>
+        <button className={styles.nextBtn} onClick={nextSlide}>
+          ▶
+        </button>
       </div>
     </div>
   );
 }
-
-// 'use client';
-// import React, { useEffect, useRef, useState } from 'react';
-// import styles from '../css/BrandSlider.module.css';
-// import Image from 'next/image';
-
-// const brands = [
-//   '/images/brands/Beiflogo.webp',
-//   '/images/brands/OHUIlogo.webp',
-//   '/images/brands/Sumlogo.webp',
-//   '/images/brands/Beiflogo.webp',
-//   '/images/brands/Sulwhasoo.webp',
-//   '/images/brands/PhysiogelLogo.webp',
-//   '/images/brands/CNPlogo.webp',
-//   '/images/brands/Beiflogo.webp',
-// ];
-
-// const ITEMS_PER_SLIDE = 5;
-// const INTERVAL = 5000;
-
-// export default function BrandSlider() {
-//   const [index, setIndex] = useState(0);
-//   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-//   const totalSlides = Math.ceil(brands.length / ITEMS_PER_SLIDE);
-
-//   useEffect(() => {
-//   intervalRef.current = setInterval(() => {
-//     setIndex((prev) => {
-//       const nextIndex = prev + 1;
-//       return nextIndex >= totalSlides ? 0 : nextIndex;
-//     });
-//   }, INTERVAL);
-
-//   return () => clearInterval(intervalRef.current!);
-// }, [totalSlides]);
-
-//   return (
-//     <div className={styles.wrapper}>
-//       <h2 className={styles.title}>THƯƠNG HIỆU NỔI BẬT</h2>
-//       <div className={styles.sliderWrapper}>
-//         <div className={styles.sliderContainer}>
-//           <div
-//             className={styles.slider}
-//             style={{
-//               transform: `translateX(-${index * 100}%)`,
-//             }}
-//           >
-//             {Array.from({ length: totalSlides }).map((_, slideIndex) => (
-//               <div className={styles.slide} key={slideIndex}>
-//                 {brands
-//                   .slice(
-//                     slideIndex * ITEMS_PER_SLIDE,
-//                     slideIndex * ITEMS_PER_SLIDE + ITEMS_PER_SLIDE
-//                   )
-//                   .map((src, i) => (
-//                     <div className={styles.brand} key={i}>
-//                       <Image src={src} alt={`Brand ${i}`} fill objectFit="contain" />
-//                     </div>
-//                   ))}
-//               </div>
-//             ))}
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }

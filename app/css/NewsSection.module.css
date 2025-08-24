@@ -36,20 +36,43 @@
 
 /* Responsive */
 
-@media (max-width: 1024px) {
+@media screen and (max-width: 1024px) {
   .Newgrid {
     grid-template-columns: repeat(3, 1fr);
   }
-}
-
-@media (max-width: 768px) {
-  .Newgrid {
-    grid-template-columns: repeat(2, 1fr);
+  .title {
+    font-size: 1.8rem;
+  }
+  .button {
+    font-size: 0.9rem;
   }
 }
 
-@media (max-width: 414px) {
+/* Mobile lớn - Hiển thị 2 cột */
+@media screen and (max-width: 768px) {
   .Newgrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .title {
+    font-size: 1.6rem;
+  }
+  .button {
+    font-size: 0.85rem;
+    padding: 10px 20px;
+  }
+}
+
+/* Mobile nhỏ - Hiển thị 1 cột */
+@media screen and (max-width: 480px) {
+  .Newgrid {
+    margin-left: 50px;
     grid-template-columns: 1fr;
+  }
+  .title {
+    font-size: 1.4rem;
+  }
+  .button {
+    font-size: 0.8rem;
+    padding: 8px 16px;
   }
 }

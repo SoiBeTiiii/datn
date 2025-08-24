@@ -62,6 +62,7 @@ export const fetchProducts = async (
       price,
       originalPrice,
       discount,
+      type_skin:  item.type_skin,
       sold: item.sold_count,
       average_rating: item.average_rating ?? 0,
       variants: item.variants ?? [],
@@ -108,6 +109,21 @@ export const fetchProductBySlug = async (
     return null;
   }
 };
+export const fetchTypeSkinOnly = async (): Promise<string[]> => {
+  try {
+    const products: ProductCardProps[] = await fetchProducts({}); // gọi API không filter
+
+    const uniqueTypeSkins = Array.from(
+      new Set(products.map((p) => p.type_skin).filter(Boolean))
+    );
+
+    return uniqueTypeSkins;
+  } catch (error) {
+    console.error("Lỗi khi fetch loại da:", error);
+    return [];
+  }
+};
+
 
 
 export const fetchVariantById = async (variantId: number) => {
@@ -190,8 +206,8 @@ export const fetchProductsByFilterKey = async (
       price,
       originalPrice,
       discount,
-      sold: Math.floor(Math.random() * 100),
-      rating: item.average_rating ?? 0,
+      sold: item.sold_count,
+      average_rating: item.average_rating ?? 0,
       variants: item.variants ?? [],
       type: item.type ?? '', // Add type property
       type_skin: item.type_skin ?? '', // Add type_skin property

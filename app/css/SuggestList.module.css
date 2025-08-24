@@ -6,7 +6,30 @@
   position: relative;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
+.wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding: 20px 0;
+}
+.sliderContainer {
+  overflow: hidden;
+  width: 100%;
+}
+.grid {
+  display: none; /* Ẩn grid cũ nếu bạn dùng slider mới */
+}
+.sliderTrack {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+}
 
+.slide {
+  flex: 0 0 calc(100% / 8); /* 8 sản phẩm mỗi trang */
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+}
 .discount {
   position: absolute;
   top: 10px;
@@ -83,7 +106,12 @@
   padding: 6px 12px;
   font-weight: bold;
 }
-
+.controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  gap: 12px;
+}
 .cart {
   background: #f48fb1;
   color: white;

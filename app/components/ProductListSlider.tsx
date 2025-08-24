@@ -52,8 +52,8 @@ export default function ProductListSlider() {
                 : 0,
             sold: item.sold ?? 0,
             average_rating: item.average_rating ?? 0,
-            type: item.type ?? "", // Add default or fallback value
-            type_skin: item.type_skin ?? "", // Add default or fallback value
+            type: item.type ?? "",
+            type_skin: item.type_skin ?? "",
           };
         });
 
@@ -68,41 +68,33 @@ export default function ProductListSlider() {
   const next = () => setPage((prev) => (prev + 1) % totalPages);
   const prev = () => setPage((prev) => (prev - 1 + totalPages) % totalPages);
 
-  const visibleProducts = products.slice(
-    page * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE + ITEMS_PER_PAGE
-  );
-
   return (
-    <>
-      <div className={styles.wrapper}>
-        <h2 className={styles.title}>Sản phẩm nổi bật</h2>
-        <div className={styles.grid}>
-          {visibleProducts.map((p) => (
-            <ProductCard
-              key={p.id}
-              id={p.id}
-              slug={p.slug}
-              name={p.name}
-              price={p.price}
-              originalPrice={p.originalPrice}
-              image={p.image}
-              sold={p.sold}
-              discount={p.discount}
-              average_rating={p.average_rating}
-              brand={p.brand} variants={[]} type={undefined} type_skin={undefined}            />
+    <div className={styles.wrapper}>
+      <h2 className={styles.title}>Sản phẩm nổi bật</h2>
+      <div className={styles.sliderContainer}>
+        <div
+          className={styles.sliderTrack}
+          style={{
+            transform: `translateX(-${page * 100}%)`,
+            transition: "transform 0.5s ease-in-out",
+          }}
+        >
+          {products.map((p, index) => (
+            <div className={styles.slide} key={p.id}>
+              <ProductCard {...p} />
+            </div>
           ))}
         </div>
-        <div className={styles.controls}>
-          <button className={styles.arrow} onClick={prev}>
-            ←
-          </button>
-          <button className={ButtonFromIntro.button}>Xem Thêm</button>
-          <button className={styles.arrow} onClick={next}>
-            →
-          </button>
-        </div>
       </div>
-    </>
+      <div className={styles.controls}>
+        <button className={styles.arrow} onClick={prev}>
+          ◀
+        </button>
+        <button className={ButtonFromIntro.button}>Xem thêm</button>
+        <button className={styles.arrow} onClick={next}>
+          ▶
+        </button>
+      </div>
+    </div>
   );
 }

@@ -24,6 +24,7 @@ export default function ProductCard({
   discount,
   sold = 0,
   average_rating = 0,
+  type_skin,
 }: ProductCardProps) {
   const { addToCart } = useCart();
   const router = useRouter();

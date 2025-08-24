@@ -3,10 +3,15 @@ import { Filter } from "lucide-react";
 import styles from "./products.module.css";
 import ProductCard from "../components/ProductCard";
 import React, { useEffect, useState } from "react";
-import { fetchProducts, fetchProductsByFilterKey } from "../../lib/productApi";
+import {
+  fetchProducts,
+  fetchProductsByFilterKey,
+  fetchTypeSkinOnly,
+} from "../../lib/productApi";
 import ProductCardProps from "../interface/ProductCardProps";
 import { useSearchParams, useRouter } from "next/navigation";
-
+import fetchBrands from "../../lib/brandApi"; // đường dẫn đúng tới file bạn vừa tạo
+import BrandProps from "../interface/brand";
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -14,7 +19,7 @@ export default function ProductsPage() {
   const category = searchParams.get("category") || undefined;
   const brandParam = searchParams.get("brand") || undefined;
   const sortParam = searchParams.get("sort") || "";
-
+  const [availableTypeSkins, setAvailableTypeSkins] = useState<string[]>([]);
   const [products, setProducts] = useState<ProductCardProps[]>([]);
   const [sort, setSort] = useState<string>(sortParam);
   const [brands, setBrands] = useState<string[]>(
@@ -24,7 +29,22 @@ export default function ProductsPage() {
   const [typeSkin, setTypeSkin] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<string[]>([]);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const ITEMS_PER_PAGE = 12;
+  const DefaultPage = 1;
+  const [currentPage, setCurrentPage] = useState(DefaultPage);
+  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page);
+  };
+  const paginatedProducts = products.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+  const [filteredBrands, setFilteredBrands] = useState<BrandProps[]>([]);
 
+  useEffect(() => {
+    fetchBrands().then(setFilteredBrands);
+  }, []);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -56,7 +76,7 @@ export default function ProductsPage() {
             keyword: keyword ?? undefined,
           });
         }
-        
+
         setProducts(fetchedProducts);
       } catch (err) {
         console.error("Lỗi khi fetch sản phẩm:", err);
@@ -95,14 +115,6 @@ export default function ProductsPage() {
     );
   };
 
-  const brandOptions = [
-    { slug: "1", name: "OHUI" },
-    { slug: "2", name: "WHOO" },
-    { slug: "3", name: "SUM37" },
-    { slug: "4", name: "SULWHASOO" },
-    { slug: "5", name: "CNP" },
-  ];
-
   const typeOptions = [
     { id: "1", name: "Áo Thun nam" },
     { id: "2", name: "Tinh chất" },
@@ -111,19 +123,30 @@ export default function ProductsPage() {
     { id: "5", name: "Sữa rửa mặt" },
   ];
 
-  const skinOptions = [
-    "Da hỗn hợp",
-    "da dầu",
-    "Da lão hóa",
-    "Da nám/tàn nhang",
-  ];
+  // const skinOptions = [
+  //   "Da hỗn hợp",
+  //   "da dầu",
+  //   "Da lão hóa",
+  //   "Da nám/tàn nhang",
+  // ];
+function capitalizeFirstLetter(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+  useEffect(() => {
+    const loadTypeSkin = async () => {
+      const skins = await fetchTypeSkinOnly();
+      const capitalizedSkins = skins.map(capitalizeFirstLetter);
+      setAvailableTypeSkins(capitalizedSkins); // Gán vào state
+    };
 
+    loadTypeSkin();
+  }, []);
   return (
     <section className={styles["product-page"]}>
       <aside className={styles["filter-sidebar"]}>
         <div className={styles["filter-section"]}>
           <h2 className={styles["filter-title"]}>Thương hiệu</h2>
-          {brandOptions.map((brand) => (
+          {filteredBrands.map((brand) => (
             <label key={brand.slug}>
               <input
                 type="checkbox"
@@ -132,7 +155,7 @@ export default function ProductsPage() {
                   handleCheckboxChange(brand.slug, brands, setBrands)
                 }
               />
-              {brand.name}
+              {brand.slug}
             </label>
           ))}
         </div>
@@ -160,33 +183,33 @@ export default function ProductsPage() {
         </div>
 
         {/* <div className={styles["filter-section"]}>
-          <h2 className={styles["filter-title"]}>Loại</h2>
-          {typeOptions.map((type) => (
-            <label key={type.id}>
+          {displayTypeSkins.map((type_skin) => (
+            <label key={type_skin}>
               <input
                 type="checkbox"
-                checked={types.includes(type.name)}
+                checked={typeSkin.includes(type_skin)}
                 onChange={() =>
-                  handleCheckboxChange(type.name, types, setTypes)
+                  handleCheckboxChange(type_skin, typeSkin, setTypeSkin)
                 }
               />
-              {type.name}
+              {type_skin}
             </label>
+          ))}
           ))}
         </div> */}
 
         <div className={styles["filter-section"]}>
           <h2 className={styles["filter-title"]}>Loại da</h2>
-          {skinOptions.map((skin) => (
-            <label key={skin}>
+          {availableTypeSkins.map((skins) => (
+            <label key={skins}>
               <input
                 type="checkbox"
-                checked={typeSkin.includes(skin)}
+                checked={typeSkin.includes(skins)}
                 onChange={() =>
-                  handleCheckboxChange(skin, typeSkin, setTypeSkin)
+                  handleCheckboxChange(skins, typeSkin, setTypeSkin)
                 }
               />
-              {skin}
+              {skins}
             </label>
           ))}
         </div>
@@ -250,7 +273,7 @@ export default function ProductsPage() {
 
               <div className={styles["filter-section"]}>
                 <h2>Thương hiệu</h2>
-                {brandOptions.map((brand) => (
+                {filteredBrands.map((brand) => (
                   <label key={brand.slug}>
                     <input
                       type="checkbox"
@@ -259,7 +282,7 @@ export default function ProductsPage() {
                         handleCheckboxChange(brand.slug, brands, setBrands)
                       }
                     />
-                    {brand.name}
+                    {brand.slug}
                   </label>
                 ))}
               </div>
@@ -304,16 +327,16 @@ export default function ProductsPage() {
 
               <div className={styles["filter-section"]}>
                 <h2>Loại da</h2>
-                {skinOptions.map((skin) => (
-                  <label key={skin}>
+                {availableTypeSkins.map((skins) => (
+                  <label key={skins}>
                     <input
                       type="checkbox"
-                      checked={typeSkin.includes(skin)}
+                      checked={typeSkin.includes(skins)}
                       onChange={() =>
-                        handleCheckboxChange(skin, typeSkin, setTypeSkin)
+                        handleCheckboxChange(skins, typeSkin, setTypeSkin)
                       }
                     />
-                    {skin}
+                    {skins}
                   </label>
                 ))}
               </div>
@@ -322,8 +345,22 @@ export default function ProductsPage() {
         )}
 
         <div className={styles["product-grid"]}>
-          {products.map((product) => (
+          {paginatedProducts.map((product) => (
             <ProductCard key={product.id} {...product} />
+          ))}
+        </div>
+
+        <div className={styles.pagination}>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i + 1}
+              className={`${styles["page-btn"]} ${
+                currentPage === i + 1 ? styles.active : ""
+              }`}
+              onClick={() => handlePageClick(i + 1)}
+            >
+              {i + 1}
+            </button>
           ))}
         </div>
       </section>

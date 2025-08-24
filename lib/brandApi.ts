@@ -1,6 +1,8 @@
 import baseAxios from "./baseAxios";
 import BrandProps from "@/app/interface/brand";
-
+function capitalizeFirstLetter(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 export default async function fetchBrands(): Promise<BrandProps[]> {
   try {
     const res = await baseAxios.get<{ data: BrandProps[] }>("/brands"); // 👈 RẤT QUAN TRỌNG
@@ -14,7 +16,7 @@ export default async function fetchBrands(): Promise<BrandProps[]> {
     return brands.map((item) => ({
       id: item.id || 0,
       name: item.name || "",
-      slug: item.slug || "",
+      slug: capitalizeFirstLetter(item.slug || ""),
       logo: item.logo || "",
       description: item.description || "",
       is_active: item.is_active || 0,

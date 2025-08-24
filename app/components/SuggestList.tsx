@@ -24,39 +24,43 @@ export default function ProductListSlider() {
   const next = () => setPage((prev) => (prev + 1) % totalPages);
   const prev = () => setPage((prev) => (prev - 1 + totalPages) % totalPages);
 
-  const visibleProducts = products.slice(
-    page * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE + ITEMS_PER_PAGE
-  );
-
   return (
     <div className={styles.wrapper}>
-      <div className={styles.grid}>
-        {visibleProducts.map((p) => (
-          <ProductCard
-            key={p.id}
-            id={p.id}
-            slug={p.slug}
-            name={p.name}
-            brand={p.brand}
-            price={p.price}
-            originalPrice={p.originalPrice}
-            image={p.image}
-            sold={p.sold}
-            discount={p.discount}
-            rating={p.rating}
-            type={p.type}
-            type_skin={p.type_skin}
-            variants={[]}
-          />
-        ))}
+      <div className={styles.sliderContainer}>
+        <div
+          className={styles.sliderTrack}
+          style={{
+            transform: `translateX(-${page * 100}%)`,
+            transition: "transform 0.5s ease-in-out",
+          }}
+        >
+          {products.map((p) => (
+            <div className={styles.slide} key={p.id}>
+              <ProductCard
+                id={p.id}
+                slug={p.slug}
+                name={p.name}
+                brand={p.brand}
+                price={p.price}
+                originalPrice={p.originalPrice}
+                image={p.image}
+                sold={p.sold}
+                discount={p.discount}
+                average_rating={p.average_rating}
+                type={p.type}
+                type_skin={p.type_skin}
+                variants={[]}
+              />
+            </div>
+          ))}
+        </div>
       </div>
       <div className={styles.controls}>
         <button className={styles.arrow} onClick={prev}>
-          ←
+          ◀
         </button>
         <button className={styles.arrow} onClick={next}>
-          →
+          ▶
         </button>
       </div>
     </div>

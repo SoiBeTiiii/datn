@@ -1,5 +1,5 @@
 "use client";
-import { Filter } from "lucide-react";
+import { Filter, X } from "lucide-react";
 import styles from "./products.module.css";
 import ProductCard from "../components/ProductCard";
 import React, { useEffect, useState } from "react";
@@ -25,8 +25,8 @@ export default function ProductsPage() {
   const [types, setTypes] = useState<string[]>([]);
   const [typeSkin, setTypeSkin] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<string[]>([]);
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [filteredBrands, setFilteredBrands] = useState<BrandProps[]>([]);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   const ITEMS_PER_PAGE = 12;
   const [currentPage, setCurrentPage] = useState(1);
@@ -71,7 +71,7 @@ export default function ProductsPage() {
 
   // Update URL when sort changes
   const handleSortChange = (value: string) => {
-    setSort(value); // ✅ đồng bộ state
+    setSort(value);
     const params = new URLSearchParams(searchParams.toString());
     params.set("sort", value);
     router.push(`/products?${params.toString()}`);
@@ -94,7 +94,9 @@ export default function ProductsPage() {
   useEffect(() => {
     const loadTypeSkin = async () => {
       const skins = await fetchTypeSkinOnly();
-      const capitalizedSkins = skins.map((s) => s.charAt(0).toUpperCase() + s.slice(1));
+      const capitalizedSkins = skins.map(
+        (s) => s.charAt(0).toUpperCase() + s.slice(1)
+      );
       setAvailableTypeSkins(capitalizedSkins);
     };
     loadTypeSkin();
@@ -102,6 +104,7 @@ export default function ProductsPage() {
 
   return (
     <section className={styles["product-page"]}>
+      {/* Sidebar filter for desktop */}
       <aside className={styles["filter-sidebar"]}>
         <div className={styles["filter-section"]}>
           <h2 className={styles["filter-title"]}>Thương hiệu</h2>
@@ -110,7 +113,9 @@ export default function ProductsPage() {
               <input
                 type="checkbox"
                 checked={brands.includes(brand.slug)}
-                onChange={() => handleCheckboxChange(brand.slug, brands, setBrands)}
+                onChange={() =>
+                  handleCheckboxChange(brand.slug, brands, setBrands)
+                }
               />
               {brand.slug}
             </label>
@@ -130,7 +135,9 @@ export default function ProductsPage() {
               <input
                 type="checkbox"
                 checked={priceRange.includes(range)}
-                onChange={() => handleCheckboxChange(range, priceRange, setPriceRange)}
+                onChange={() =>
+                  handleCheckboxChange(range, priceRange, setPriceRange)
+                }
               />
               {range.replace("-", "đ - ")}đ
             </label>
@@ -144,7 +151,9 @@ export default function ProductsPage() {
               <input
                 type="checkbox"
                 checked={typeSkin.includes(skins)}
-                onChange={() => handleCheckboxChange(skins, typeSkin, setTypeSkin)}
+                onChange={() =>
+                  handleCheckboxChange(skins, typeSkin, setTypeSkin)
+                }
               />
               {skins}
             </label>
@@ -152,7 +161,17 @@ export default function ProductsPage() {
         </div>
       </aside>
 
+      {/* Main content */}
       <section className={styles["product-list"]}>
+        {/* Filter icon only on mobile */}
+        <button
+          className={styles["mobile-filter-btn"]}
+          onClick={() => setIsMobileFilterOpen(true)}
+        >
+          <Filter size={18} className={styles["filter-icon"]} />
+          Bộ lọc
+        </button>
+
         <h2 className={styles["section-title"]}>Tất cả sản phẩm</h2>
 
         {/* Sort buttons */}
@@ -168,7 +187,9 @@ export default function ProductsPage() {
             <button
               key={key}
               onClick={() => handleSortChange(key)}
-              className={`${styles["sort-btn"]} ${sort === key ? styles.active : ""}`}
+              className={`${styles["sort-btn"]} ${
+                sort === key ? styles.active : ""
+              }`}
             >
               {label}
             </button>
@@ -212,6 +233,75 @@ export default function ProductsPage() {
           ))}
         </div>
       </section>
+
+      {/* Popup Filter Mobile */}
+      {isMobileFilterOpen && (
+        <>
+          {/* Overlay */}
+          <div
+            className={styles["mobile-filter-overlay"]}
+            onClick={() => setIsMobileFilterOpen(false)}
+          />
+          {/* Drawer */}
+          <div className={styles["mobile-filter-drawer"]}>
+            <button
+              className={styles["close-btn"]}
+              onClick={() => setIsMobileFilterOpen(false)}
+            >
+              <X size={20} />
+            </button>
+
+            {/* Bộ lọc trong popup */}
+            <h3 className={styles["filter-title"]}>Thương hiệu</h3>
+            {filteredBrands.map((brand) => (
+              <label key={brand.slug}>
+                <input
+                  type="checkbox"
+                  checked={brands.includes(brand.slug)}
+                  onChange={() =>
+                    handleCheckboxChange(brand.slug, brands, setBrands)
+                  }
+                />
+                {brand.slug}
+              </label>
+            ))}
+
+            <h3 className={styles["filter-title"]}>Mức giá</h3>
+            {[
+              "0-500000",
+              "500000-1000000",
+              "1000000-2000000",
+              "2000000-5000000",
+              "10000000-99999999",
+            ].map((range) => (
+              <label key={range}>
+                <input
+                  type="checkbox"
+                  checked={priceRange.includes(range)}
+                  onChange={() =>
+                    handleCheckboxChange(range, priceRange, setPriceRange)
+                  }
+                />
+                {range.replace("-", "đ - ")}đ
+              </label>
+            ))}
+
+            <h3 className={styles["filter-title"]}>Loại da</h3>
+            {availableTypeSkins.map((skins) => (
+              <label key={skins}>
+                <input
+                  type="checkbox"
+                  checked={typeSkin.includes(skins)}
+                  onChange={() =>
+                    handleCheckboxChange(skins, typeSkin, setTypeSkin)
+                  }
+                />
+                {skins}
+              </label>
+            ))}
+          </div>
+        </>
+      )}
     </section>
   );
 }

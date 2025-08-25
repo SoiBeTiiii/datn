@@ -1,130 +1,111 @@
 .footer {
   background-color: #fe68a7;
-  padding: 40px;
+  padding: 40px 20px;
   font-family: Arial, sans-serif;
-  color: #333;
+  color: #fff;
 }
 
+/* Dùng grid để chia thành 4 ô */
 .contact {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 40px;
-  flex-wrap: wrap;
-  margin-left: 100px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  margin: 0 auto;
+  max-width: 1200px;
+  margin-right: 50px;
 }
 
+/* Logo và thông tin liên hệ */
 .address {
-  flex: 1;
-  font-size: 16px;
-  margin-right: 20px;
-  color: whitesmoke;
-  font-weight: bolder ;
-}
-
-.logo {
-  font-weight: bold;
-  font-size: 20px;
-  color: #ff7f7f;
-}
-
-.links {
-  flex: 2;
   display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.logoImage {
+  max-width: 140px;
+  height: auto;
+  margin-bottom: 12px;
+}
+
+.address p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Links */
+.links {
+  display: contents; /* Quan trọng: để 3 cột link nằm riêng biệt */
 }
 
 .column {
-  flex: 1;
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .heading {
   font-size: 18px;
-  color: rgb(223, 223, 223);
-  margin-bottom: 15px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #fff;
 }
 
-.heading .ul {
-  list-style: none;
-  text-decoration: none;
-}
 .uli {
+  list-style: none;
   padding: 0;
-  text-decoration: none;
-  list-style-type: none;
+  margin: 0;
 }
 
-.uli .li {
-  margin: 10px 0;
+.li {
+  margin: 6px 0;
   font-size: 14px;
-  text-decoration: none;
-  list-style-type: none;
-  color: aliceblue;
 }
 
+.li a {
+  text-decoration: none;
+  color: #fff;
+  transition: color 0.3s;
+}
+
+.li a:hover {
+  color: #222;
+}
+
+/* Footer dưới */
 .footerBottom {
   text-align: center;
   font-size: 14px;
   color: white;
-  margin-top: 20px;
+  margin-top: 30px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+/* Tablet: 2 ô */
+@media (max-width: 1024px) {
+  .contact {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+  }
+}
+
+/* Mobile: 1 ô */
 @media (max-width: 768px) {
   .contact {
-    flex-direction: column;
-    align-items: center;
+    /* grid-template-columns: 2fr 1; */
+    text-align: left;
   }
 
-  .address {
-    margin-right: 0;
-    text-align: center;
-    margin-bottom: 20px;
-  }
-
-  .links {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .column {
-    width: 100%;
-    text-align: center;
+  .logoImage {
+    max-width: 120px;
   }
 
   .heading {
     font-size: 16px;
   }
 
-  .ul .li {
+  .li {
     font-size: 13px;
-  }
-
-  .footerBottom {
-    font-size: 12px;
-  }
-}
-
-@media (max-width: 480px) {
-  /* .footer{
-    margin-right: 100px;
-  } */
-  .contact {
-    padding: 20px;
-    margin:  0 auto;
-    /* margin-right: 190px; */
-  }
-
-  .logo {
-    font-size: 18px;
-  }
-
-  .heading {
-    font-size: 14px;
-  }
-
-  .ul .li {
-    font-size: 12px;
   }
 }

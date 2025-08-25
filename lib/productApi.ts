@@ -30,9 +30,10 @@ export const fetchProducts = async (
   if (filters.search) searchParams.append('search', filters.search);
   if (filters.sort) searchParams.append('sort', filters.sort);
   if (filters.brand?.length) searchParams.append('brand', filters.brand.join(','));
-  // if (filters.types?.length) searchParams.append('type', filters.types.join(','));
   if (filters.type_skin?.length) searchParams.append('type_skin', filters.type_skin.join(','));
   if (filters.price_range?.length) searchParams.append('price_range', filters.price_range.join(','));
+    if (filters.category) searchParams.append('category', filters.category); // ✅ Thêm vào đây
+
 
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
   const res = await baseAxios.get(`${baseUrl}/products?${searchParams.toString()}`);

@@ -48,6 +48,7 @@ export interface ProductDetail {
     slug: string;
     price: number;
     sale_price: number;
+    sold_count: number;
     final_price_discount: number | null;
     brand: string;
     image: string;

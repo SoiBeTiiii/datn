@@ -22,6 +22,36 @@ export default function ProductDetailPage() {
   }>({});
   const { addToCart } = useCart();
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const totalSlides = Math.ceil((product?.related?.length || 0) / itemsPerPage);
+
+  useEffect(() => {
+    const updateItemsPerPage = () => {
+      if (window.innerWidth >= 1400) setItemsPerPage(5);
+      else if (window.innerWidth >= 1024) setItemsPerPage(4);
+      else if (window.innerWidth >= 768) setItemsPerPage(3);
+      else if (window.innerWidth >= 480) setItemsPerPage(2);
+      else setItemsPerPage(1);
+    };
+
+    updateItemsPerPage();
+    window.addEventListener("resize", updateItemsPerPage);
+
+    return () => window.removeEventListener("resize", updateItemsPerPage);
+  }, []);
+
+  const handleNext = () => {
+    if (currentIndex < totalSlides - 1) {
+      setCurrentIndex((prev) => prev + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex((prev) => prev - 1);
+    }
+  };
 
   // Build maps from option values
   const buildVariantOptions = (product: ProductDetail) => {
@@ -394,25 +424,56 @@ export default function ProductDetailPage() {
 
       <section className={styles["related-products"]}>
         <h2>Sản phẩm liên quan</h2>
-        <div className={styles["related-grid"]}>
-          {product.related?.map((rel) => (
-            <ProductCard
-              key={rel.id}
-              id={rel.id}
-              slug={rel.slug}
-              name={rel.name}
-              brand={rel.brand}
-              image={rel.image}
-              price={rel.sale_price}
-              originalPrice={rel.price}
-              discount={Math.round(100 - (rel.sale_price * 100) / rel.price)}
-              sold={Math.floor(Math.random() * 100)}
-              average_rating={rel.average_rating}
-              variants={[]}
-              type={undefined}
-              type_skin={""}
-            />
-          ))}
+
+        <div className={styles["slider-container"]}>
+          <button
+            className={styles["prev-btn"]}
+            onClick={() => handlePrev()}
+            disabled={currentIndex === 0}
+          >
+            &#10094;
+          </button>
+
+          <div className={styles["slider-wrapper"]}>
+            <div
+              className={styles["slider"]}
+              style={{
+                transform: `translateX(-${
+                  currentIndex * (100 / itemsPerPage)
+                }%)`,
+              }}
+            >
+              {product.related?.map((rel) => (
+                <div className={styles["slide"]} key={rel.id}>
+                  <ProductCard
+                    id={rel.id}
+                    slug={rel.slug}
+                    name={rel.name}
+                    brand={rel.brand}
+                    image={rel.image}
+                    price={rel.sale_price}
+                    originalPrice={rel.price}
+                    discount={Math.round(
+                      100 - (rel.sale_price * 100) / rel.price
+                    )}
+                    sold={rel.sold_count}
+                    average_rating={rel.average_rating}
+                    variants={[]}
+                    type={undefined}
+                    type_skin={""}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button
+            className={styles["next-btn"]}
+            onClick={() => handleNext()}
+            disabled={currentIndex >= totalSlides - 1}
+          >
+            &#10095;
+          </button>
         </div>
       </section>
     </>

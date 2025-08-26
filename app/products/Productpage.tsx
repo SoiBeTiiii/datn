@@ -163,14 +163,7 @@ export default function ProductsPage() {
 
       {/* Main content */}
       <section className={styles["product-list"]}>
-        {/* Filter icon only on mobile */}
-        <button
-          className={styles["mobile-filter-btn"]}
-          onClick={() => setIsMobileFilterOpen(true)}
-        >
-          <Filter size={18} className={styles["filter-icon"]} />
-          Bộ lọc
-        </button>
+        
 
         <h2 className={styles["section-title"]}>Tất cả sản phẩm</h2>
 
@@ -195,7 +188,14 @@ export default function ProductsPage() {
             </button>
           ))}
         </div>
-
+          {/* Filter icon only on mobile */}
+        <button
+          className={styles["mobile-filter-btn"]}
+          onClick={() => setIsMobileFilterOpen(true)}
+        >
+          <Filter size={18} className={styles["filter-icon"]} />
+          Bộ lọc
+        </button>
         {/* Sort dropdown mobile */}
         <div className={styles["sort-dropdown-mobile"]}>
           <select

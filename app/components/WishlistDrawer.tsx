@@ -161,7 +161,6 @@ export default function WishlistDrawer({
         </div>
       )}
 
-      <ToastContainer position="top-right" autoClose={3000} />
     </>
   );
 }

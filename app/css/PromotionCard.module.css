@@ -99,11 +99,12 @@
 }
 
 .image {
-  width: 100%;
+  width: 75%;
   height: 180px;
-  object-fit: contain;
+  /* object-fit: contain; */
   margin-bottom: 12px;
   transition: transform 0.3s ease;
+  border-radius: 20px;
 }
 .wishlist:hover {
   color: #e91e63; /* Màu khi hover */

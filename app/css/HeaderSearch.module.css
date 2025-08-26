@@ -294,10 +294,48 @@
   margin-bottom: 10px;
   color: #0e172c;
 }
-
+.mobileIcons {
+  display: none;
+}
 .megaColumn:hover h4 {
   color: #ff66a6;
+}
 
+.mobileSearchDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #eee;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: 6px;
+  /* margin-top: 0px; */
+  z-index: 10001;
+  list-style: none;
+  padding: 0;
+}
+
+.mobileSearchItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mobileSearchItem:hover {
+  background-color: #f7f7f7;
+}
+
+.mobileResultImage {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
 }
 
 .megaColumn span {
@@ -320,7 +358,9 @@
 .mobileRight {
   display: none;
 }
-
+.mobileSearchBar {
+  display: none;
+}
 @media (max-width: 1024px) {
   .logo {
     font-size: 24px;
@@ -337,13 +377,90 @@
 }
 
 @media (max-width: 768px) {
+  .mobileSearchBar {
+    display: flex;
+    padding: 8px 16px;
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .mobileSearchBar form {
+    display: flex;
+    flex: 1;
+    position: relative;
+  }
+
+  .mobileSearchBar input {
+    flex: 1;
+    height: 40px;
+    padding: 8px 12px 8px 38px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    background-color: #f3f3f3;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .mobileSearchBar button {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #888;
+    font-size: 20px;
+  }
   .mainBar {
     justify-content: center;
     padding: 10px 16px;
     height: 60px;
     position: relative;
   }
+ .mobileIcons {
+    display: flex;
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    gap: 12px;
+    align-items: center;
+    z-index: 10001;
+  }
 
+  .mobileIcons .iconItem {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+  }
+
+  .mobileIcons .iconItem svg {
+    font-size: 20px;
+    color: #000;
+  }
+
+  /* Badge số lượng */
+  .mobileIcons .iconBadge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background-color: #f55fa3;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 50%;
+    line-height: 1;
+  }
   .menuIcon {
     display: block;
     position: absolute;

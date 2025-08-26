@@ -44,25 +44,25 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false); // Trạng thái cuộn
 
   useEffect(() => {
-  const delayDebounce = setTimeout(async () => {
-    if (keyword.trim()) {
-      try {
-        const data = await searchProducts(keyword);
-        setResults(data);
-        setShowResults(true);
-      } catch (err) {
-        console.error("Lỗi tìm kiếm:", err);
+    const delayDebounce = setTimeout(async () => {
+      if (keyword.trim()) {
+        try {
+          const data = await searchProducts(keyword);
+          setResults(data);
+          setShowResults(true);
+        } catch (err) {
+          console.error("Lỗi tìm kiếm:", err);
+          setResults([]);
+          setShowResults(false);
+        }
+      } else {
         setResults([]);
         setShowResults(false);
       }
-    } else {
-      setResults([]);
-      setShowResults(false);
-    }
-  }, 300); // debounce 300ms
+    }, 300); // debounce 300ms
 
-  return () => clearTimeout(delayDebounce);
-}, [keyword]);
+    return () => clearTimeout(delayDebounce);
+  }, [keyword]);
 
   // Fetch wishlist khi component mount
   useEffect(() => {
@@ -169,6 +169,8 @@ export default function Header() {
 
         {/* Main Header Bar */}
         <div className={styles.mainBar}>
+          {/* === Thanh tìm kiếm riêng cho mobile === */}
+
           <div
             className={styles.menuIcon}
             onClick={() => setMobileMenuOpen(true)}
@@ -177,6 +179,27 @@ export default function Header() {
           </div>
 
           <div className={styles.logo}>EGOMall</div>
+          {/* === Nhóm icon Wishlist + Giỏ hàng mobile === */}
+          <div className={styles.mobileIcons}>
+            {/* Wishlist */}
+            <div
+              className={styles.iconItem}
+              onClick={() => setWishlistOpen(true)}
+            >
+              <MdFavorite size={22} />
+              {wishlistItems.length > 0 && (
+                <span className={styles.iconBadge}>{wishlistItems.length}</span>
+              )}
+            </div>
+
+            {/* Giỏ hàng */}
+            <div className={styles.iconItem} onClick={() => setCartOpen(true)}>
+              <MdShoppingCart size={22} />
+              {totalQuantity > 0 && (
+                <span className={styles.iconBadge}>{totalQuantity}</span>
+              )}
+            </div>
+          </div>
 
           {/* Search Box */}
           <form
@@ -288,6 +311,53 @@ export default function Header() {
               </div>
               <span>Giỏ hàng</span>
             </div>
+          </div>
+        </div>
+        {/* === Thanh tìm kiếm riêng cho mobile === */}
+        <div suppressHydrationWarning>
+          <div className={styles.mobileSearchBar}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                router.push(`/search?search=${encodeURIComponent(keyword)}`);
+                setShowResults(false);
+              }}
+            >
+              <input
+                type="text"
+                placeholder="Tìm kiếm sản phẩm..."
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onFocus={() => keyword.trim() && setShowResults(true)}
+              />
+              <button type="submit">
+                <MdSearch size={20} />
+              </button>
+            </form>
+
+            {/* Dropdown gợi ý sản phẩm */}
+            {showResults && results.length > 0 && (
+              <ul className={styles.mobileSearchDropdown}>
+                {results.slice(0, 6).map((item) => (
+                  <li
+                    key={item.slug}
+                    className={styles.mobileSearchItem}
+                    onClick={() => {
+                      router.push(`/products/${item.slug}`);
+                      setShowResults(false);
+                      setKeyword("");
+                    }}
+                  >
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className={styles.mobileResultImage}
+                    />
+                    <span>{item.name}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 

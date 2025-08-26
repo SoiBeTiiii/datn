@@ -60,11 +60,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  useEffect(() => {
+ useEffect(() => {
+  if (cart.length === 0) {
+    localStorage.removeItem(LOCAL_STORAGE_KEY); // ✅ thật sự xóa key
+  } else {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cart));
-  }, [cart]);
+  }
+}, [cart]);
 
   const clearCart = () => {
+    
     // Xóa dữ liệu trong localStorage
     localStorage.removeItem(LOCAL_STORAGE_KEY);
 

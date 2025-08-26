@@ -25,6 +25,7 @@ export default function CheckoutPage() {
   const [voucherList, setVoucherList] = useState<Voucher[]>([]);
   const [voucherCode, setVoucherCode] = useState("");
   const [voucherMessage, setVoucherMessage] = useState("");
+  const { cart: cartItems, clearCart } = useCart();
 
   const [voucherData, setVoucherData] = useState<{
     id: number;
@@ -275,6 +276,7 @@ export default function CheckoutPage() {
           },
         ],
       };
+
       const res = (await checkoutOrder(payload)) as {
         data?: { redirect_url?: string };
       };
@@ -282,21 +284,20 @@ export default function CheckoutPage() {
       if (paymentMethod === "MOMO" || paymentMethod === "VNPAY") {
         const redirectUrl = res?.data?.redirect_url;
         if (redirectUrl) {
+          clearCart(); // ✅ xóa qua context (UI cập nhật ngay)
           toast.success("✅ Đang chuyển hướng đến cổng thanh toán...");
-          localStorage.removeItem("egomall_cart");
-          window.location.href = redirectUrl; // redirect sang trang thanh toán
-          return; // dừng lại, không chạy tiếp
+          window.location.href = redirectUrl;
+          return;
         } else {
           toast.error("❌ Không nhận được link thanh toán từ server");
           return;
         }
       }
 
-      // Nếu là COD thì không redirect
-      localStorage.removeItem("egomall_cart");
-
+      // COD: không redirect ra ngoài
+      clearCart(); // ✅ xóa giỏ qua context để UI cập nhật ngay
       toast.success("✅ Đặt hàng thành công!");
-      router.push("/thank-you");
+      router.replace("/thank-you"); // replace để tránh quay lại trang checkout
     } catch (error) {
       toast.error("❌ Đặt hàng thất bại!");
       console.error(error);

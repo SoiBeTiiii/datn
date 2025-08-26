@@ -4,15 +4,18 @@ import styles from "../css/WishlistDrawer.module.css";
 import { MdClose, MdDelete } from "react-icons/md";
 import { useState, useEffect } from "react";
 import { getWishlists, WishlistItem } from "../../lib/wishlistApi";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Cookies from "js-cookie";
+// import Cookies from "js-cookie"; // ❌ không dùng cho httpOnly
+// (tùy chọn) nếu bạn có AuthContext:
+// import { useAuth } from "../context/AuthContext";
 
 interface WishlistDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  wishlistItems: any[];
-  onAddToWishlist: (slug: string) => Promise<void>;
+  // ⚠️ Bạn đang không dùng 2 props dưới. Giữ lại nếu parent cần, nhưng component render dựa trên state nội bộ.
+  wishlistItems?: any[];
+  onAddToWishlist?: (slug: string) => Promise<void>;
   onRemoveFromWishlist: (slug: string) => Promise<void>;
 }
 
@@ -23,39 +26,42 @@ export default function WishlistDrawer({
 }: WishlistDrawerProps) {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
+  // const { user } = useAuth(); // nếu có context
 
   const isUserLoggedIn = () => {
-    // Kiểm tra token trong cookie
-    const token = Cookies.get("authToken"); // Giả sử tên cookie là "authToken"
-    return token !== undefined;
+    // ✅ Dùng localStorage đúng với nơi bạn lưu token khi login
+    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+    // hoặc nếu có context: return !!user;
+    return !!token;
   };
+
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
-        // Nếu người dùng chưa đăng nhập, không gọi API mà chỉ hiển thị modal đăng nhập
         if (!isUserLoggedIn()) {
-          setLoginModalOpen(true); // Hiển thị modal yêu cầu đăng nhập
-          return; // Dừng lại ở đây mà không gửi yêu cầu API
+          setLoginModalOpen(true);
+          return;
         }
 
-        // Gửi yêu cầu API nếu đã đăng nhập
-        const wishlistData = await getWishlists();
-        setWishlistItems(wishlistData.data);
+        const resp = await getWishlists();
+        // ✅ Chuẩn hóa: cố gắng lấy mảng ở các shape phổ biến
+        const items =
+          Array.isArray((resp as any)?.data) ? (resp as any).data :
+          Array.isArray((resp as any)?.data?.data) ? (resp as any).data.data :
+          Array.isArray(resp) ? (resp as any) :
+          [];
+
+        setWishlistItems(items);
       } catch (error: any) {
-        if (error.response?.status === 401) {
-          // Nếu nhận lỗi 401 (chưa đăng nhập), chỉ hiển thị thông báo mà không làm gián đoạn
-          console.log(
-            "Token không hợp lệ hoặc chưa đăng nhập, yêu cầu đăng nhập."
-          );
-          // Optional: Bạn có thể thêm toast thông báo nếu cần
+        if (error?.response?.status === 401) {
           toast.info("Vui lòng đăng nhập để sử dụng wishlist 🔐");
-          setLoginModalOpen(true); // Hiển thị modal đăng nhập
+          setLoginModalOpen(true);
         } else {
-          // Nếu có lỗi khác, hiển thị thông báo lỗi chung
+          console.error("Wishlist fetch error:", error);
           toast.error("Đã xảy ra lỗi, vui lòng thử lại sau 😢");
         }
       }
-    };  
+    };
 
     if (isOpen) {
       fetchWishlist();
@@ -65,11 +71,18 @@ export default function WishlistDrawer({
   const handleRemoveFromWishlist = async (slug: string) => {
     try {
       await onRemoveFromWishlist(slug);
-      const { data } = await getWishlists();
-      setWishlistItems(data);
+      // refetch sau khi xóa
+      const resp = await getWishlists();
+      const items =
+        Array.isArray((resp as any)?.data) ? (resp as any).data :
+        Array.isArray((resp as any)?.data?.data) ? (resp as any).data.data :
+        Array.isArray(resp) ? (resp as any) :
+        [];
+      setWishlistItems(items);
+
       toast.success("Đã xóa khỏi danh sách yêu thích 💔");
     } catch (error: any) {
-      if (error.response?.status === 401) {
+      if (error?.response?.status === 401) {
         toast.info("Vui lòng đăng nhập để sử dụng wishlist 🔐");
         setLoginModalOpen(true);
       } else {
@@ -93,53 +106,55 @@ export default function WishlistDrawer({
           </div>
 
           <div className={styles.content}>
-            {wishlistItems.length === 0 ? (
-              <p>Chưa có sản phẩm nào trong wishlist.</p>
-            ) : (
+            {Array.isArray(wishlistItems) && wishlistItems.length > 0 ? (
               wishlistItems.map((item) => {
-                const lowestSalePrice = item.variants.reduce(
-                  (min: number, variant) =>
-                    variant.sale_price && variant.sale_price < min
-                      ? variant.sale_price
-                      : min,
-                  item.variants[0].sale_price || item.variants[0].price
-                );
+                // Phòng khi API thiếu variants hoặc mảng rỗng
+                const basePrice =
+                  item?.variants?.[0]?.sale_price ??
+                  item?.variants?.[0]?.price ??
+                  0;
+
+                const lowestSalePrice = (item?.variants || []).reduce((min: number, v: any) => {
+                  const val = v?.sale_price ?? v?.price ?? min;
+                  return typeof val === "number" && val < min ? val : min;
+                }, typeof basePrice === "number" ? basePrice : 0);
 
                 return (
                   <div key={item.slug} className={styles.item}>
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className={styles.image}
-                    />
+                    <img src={item.image} alt={item.name} className={styles.image} />
                     <div>
                       <p className={styles.name}>{item.name}</p>
                       <div className={styles.price}>
-                        {lowestSalePrice && (
+                        {lowestSalePrice > 0 && (
                           <span className={styles.salePrice}>
                             {lowestSalePrice.toLocaleString("vi-VN")}₫
                           </span>
                         )}
-                        <span className={styles.originalPrice}>
-                          {item.variants[0].price.toLocaleString("vi-VN")}₫
-                        </span>
+                        {item?.variants?.[0]?.price && (
+                          <span className={styles.originalPrice}>
+                            {item.variants[0].price.toLocaleString("vi-VN")}₫
+                          </span>
+                        )}
                       </div>
                     </div>
                     <button
                       className={styles.removeBtn}
                       onClick={() => handleRemoveFromWishlist(item.slug)}
+                      aria-label="Xóa khỏi wishlist"
                     >
                       <MdDelete size={20} />
                     </button>
                   </div>
                 );
               })
+            ) : (
+              <p>Chưa có sản phẩm nào trong wishlist.</p>
             )}
           </div>
         </div>
       </div>
 
-      {/* ✅ Modal đăng nhập nếu chưa đăng nhập */}
+      {/* Modal đăng nhập nếu chưa đăng nhập */}
       {isLoginModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow-lg w-80">
@@ -151,8 +166,7 @@ export default function WishlistDrawer({
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
               onClick={() => {
                 setLoginModalOpen(false);
-                // 👉 Redirect sang trang đăng nhập nếu cần
-                // router.push("/login");
+                // ví dụ: router.push("/login")
               }}
             >
               Đăng nhập
@@ -160,7 +174,6 @@ export default function WishlistDrawer({
           </div>
         </div>
       )}
-
     </>
   );
 }

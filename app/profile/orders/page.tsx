@@ -18,7 +18,7 @@ const statusTabMap: Record<string, string> = {
   shipping: "đang giao hàng",
   delivered: "đã giao",
   cancelled: "đã hủy",
-  returned: "đã trả hàng",
+  return_sales: "trả hàng",
 };
 
 const reverseStatusTabMap = Object.entries(statusTabMap).reduce(
@@ -65,7 +65,7 @@ export default function OrdersPage() {
       await requestReturnApi(order_id, reason);
       alert("Yêu cầu trả hàng đã được gửi");
 
-      const data = await getOrderByStatus("returned");
+      const data = await getOrderByStatus("return_sales");
       setOrders(data);
       setShowReturnForm(null);
       setReturnReason("");

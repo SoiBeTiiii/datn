@@ -43,14 +43,30 @@ export default function LoginPage() {
   }
 };
 
- const handleLogin = async (e: React.FormEvent) => {
+const handleLogin = async (e: React.FormEvent) => {
   e.preventDefault();
-
   try {
-    const res = await login(email, password);
-    if (res.success) {
-      const user = await userInfo(); // Đảm bảo rằng bạn không bỏ qua đối số này nếu cần
-      setUser(user);  // setUser(user) có thể là nguyên nhân của lỗi
+    const res = await login(email, password); // ApiResponse<LoginResponse>
+
+    if (res.success && res.data) {
+      // Lưu token
+      localStorage.setItem("authToken", res.data.token);
+
+      // Lấy profile ngay sau login
+      const profile = await userInfo();
+
+      // setUser trực tiếp object User (không dùng callback)
+      setUser({
+        id: (profile as any).id,
+        name: profile.name,
+        email: profile.email,
+        role: profile.role,
+        phone: profile.phone,
+      });
+
+      // Lưu snapshot để UI hiện ngay khi điều hướng
+      localStorage.setItem("user", JSON.stringify(profile));
+
       router.push(redirect);
     } else {
       alert(res.message || "Đăng nhập thất bại");

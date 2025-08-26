@@ -1,6 +1,7 @@
 import authAxios from './authAxios';
 
 export interface ApiResponse<T = unknown> {
+  user(user: any): unknown;
   success: boolean;
   message: string;
   data: T;

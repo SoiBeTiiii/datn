@@ -13,10 +13,16 @@ export default function ProductListSlider() {
 
   useEffect(() => {
     fetchProducts()
-      .then((data) => {
-        const productsWithId = data.map((item, index) => {
+      .then((res) => {
+        // 🔹 Lấy mảng sản phẩm từ res
+        const data = res;
+        // 🔹 Lọc sản phẩm nổi bật
+        const featuredProducts = data.filter(
+          (item) => item.is_featured === true
+        );
+        // 🔹 Map dữ liệu để chuẩn hóa
+        const productsWithId = featuredProducts.map((item, index) => {
           const variants = item.variants || [];
-
           let finalPrice = null;
           let price = null;
 
@@ -31,18 +37,17 @@ export default function ProductListSlider() {
             const finalPriceDiscount = getLowest("final_price_discount");
             const salePrice = getLowest("sale_price");
             const basePrice = getLowest("price");
-
             finalPrice = finalPriceDiscount ?? salePrice ?? basePrice;
             price = basePrice;
           }
 
           return {
-            variants: variants,
+            variants,
             id: item.id ?? index,
             name: item.name,
             slug: item.slug,
             image: item.image,
-            brand: item.brand,
+            brand: item.brand || "",
             price: finalPrice ?? 0,
             originalPrice:
               price !== finalPrice && price !== null ? price : undefined,
@@ -52,8 +57,9 @@ export default function ProductListSlider() {
                 : 0,
             sold: item.sold ?? 0,
             average_rating: item.average_rating ?? 0,
-            type: item.type ?? "",
             type_skin: item.type_skin ?? "",
+            is_featured: item.is_featured ?? false,
+            type: item.type ?? "", // Add this line to satisfy ProductCardProps
           };
         });
 
@@ -79,7 +85,7 @@ export default function ProductListSlider() {
             transition: "transform 0.5s ease-in-out",
           }}
         >
-          {products.map((p, index) => (
+          {products.map((p) => (
             <div className={styles.slide} key={p.id}>
               <ProductCard {...p} />
             </div>

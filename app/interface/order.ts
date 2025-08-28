@@ -16,6 +16,8 @@ export interface GiftProduct {
 
 export interface Product {
   name: string;
+  image: string;
+
   variant: string;
   quantity: number;
   price: number;
@@ -26,8 +28,11 @@ export interface Product {
 }
 
 export interface Order {
+  reason: string;
+  return_requested_at: string;
   payment_method: ReactNode;
   unique_id: string;
+  note: string;
   // can_request_return: boolean;
   status: string; // e.g., 'ordered', 'delivered', etc.
   display_status: string; // e.g., 'Chờ xác nhận', 'Cần đánh giá'
@@ -38,13 +43,14 @@ export interface Order {
   can_review: boolean;
   can_request_return: boolean;
   return_status: string;
-  return_reason: string;
-  return_request_at:string;
+  // reason: string;
+  return_request_at: string;
   can_pay: boolean;
   products: Product[];
 }
 
 export interface OrderDetailResponse {
+  display_status: ReactNode;
   data: SetStateAction<OrderDetailResponse | null>;
   unique_id: string;
   status: string;
@@ -63,7 +69,7 @@ export interface OrderDetailResponse {
   payment_status: string;
   return_status: string;
   return_reason: string;
-  return_request_at:string;
+  return_request_at: string;
   address: string;
   shipping_method_snapshot: string;
   shipping_fee: string;

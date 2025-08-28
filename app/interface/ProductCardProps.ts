@@ -1,4 +1,5 @@
 export default interface ProductCardProps {
+  is_featured: boolean;
   // parentProductId: any;
   // promotion: any;
   variants: never[];

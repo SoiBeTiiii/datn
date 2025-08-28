@@ -1,20 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ProductCard from "./PromotionCard";
 import CountdownTimer from "./CountDown";
-
 import styles from "../css/PromotionList.module.css";
 import ButtonFromIntro from "../css/IntroSlider.module.css";
-
 import { fetchProducts } from "../../lib/productApi";
 import { fetchPromotions } from "../../lib/PromoApi";
 import ProductCardProps from "../interface/PromotionCard";
 
+const ITEMS_PER_PAGE = 4;
+
+function chunkArray<T>(arr: T[], size: number): T[][] {
+  if (size <= 0) return [arr];
+  const pages: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) pages.push(arr.slice(i, i + size));
+  return pages;
+}
+
 export default function ProductListSlider() {
   const [products, setProducts] = useState<ProductCardProps[]>([]);
   const [page, setPage] = useState(0);
-  const ITEMS_PER_PAGE = 4;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,38 +32,29 @@ export default function ProductListSlider() {
 
         const parentIds = new Set<number>();
 
-        // Xử lý khuyến mãi
+        // gom các id sản phẩm có khuyến mãi
         Object.values(promoData).forEach((promo: any) => {
           if (promo.type === "variant") {
             parentIds.add(promo.parentProduct);
           } else if (promo.type === "product") {
-            // Xử lý type product: Kiểm tra productId trong promoData với các sản phẩm trong productData
             const matchedProduct = productData.find(
-              (product: any) => product.id === promo.productId
+              (p: any) => p.id === promo.productId
             );
-            if (matchedProduct) {
-              parentIds.add(matchedProduct.id);
-            }
+            if (matchedProduct) parentIds.add(matchedProduct.id);
           }
         });
 
-        // Lọc các sản phẩm theo parentIds
-        const filteredProducts = productData.filter((product: any) =>
-          parentIds.has(product.id)
+        const filteredProducts = productData.filter((p: any) =>
+          parentIds.has(p.id)
         );
 
-        // Làm giàu thông tin cho các sản phẩm đã lọc
-        const enriched = filteredProducts.map((product: any) => {
+        const enriched: ProductCardProps[] = filteredProducts.map((product: any) => {
           const matchingPromo = Object.values(promoData).find((promo: any) => {
-            if (promo.type === "variant") {
-              return promo.parentProduct === product.id;
-            } else if (promo.type === "product") {
-              return promo.productId === product.id; // So khớp productId của khuyến mãi với sản phẩm
-            }
+            if (promo.type === "variant") return promo.parentProduct === product.id;
+            if (promo.type === "product") return promo.productId === product.id;
             return false;
           });
 
-          // Tạo label từ condition
           let promotionLabel = "";
           const cond = matchingPromo?.conditions;
           if (cond) {
@@ -72,23 +69,28 @@ export default function ProductListSlider() {
             }
           }
 
-          // Lấy tất cả các biến thể của sản phẩm
           const variants = product.variants || [];
 
+          // Chuẩn hoá field để card dùng
           return {
-            ...product,
+            id: product.id,
+            slug: product.slug ?? "",
+            name: product.name ?? "",
+            image: product.image ?? "",
+            price: product.price ?? 0,
+            originalPrice: product.originalPrice ?? 0,
+            sold: product.sold ?? product.sold_count ?? 0,
+            discount: product.discount ?? 0,
+            average_rating: product.average_rating ?? 0,
             promotionName: matchingPromo?.promotionName,
             endDate: matchingPromo?.endDate,
-            sold:
-              matchingPromo && "soldQuantity" in matchingPromo
-                ? matchingPromo.soldQuantity
-                : product.sold,
             promotionLabel,
-            variants, // Thêm biến thể của sản phẩm vào kết quả
+            variants,
           };
         });
 
-        setProducts(enriched); // Cập nhật sản phẩm đã làm giàu
+        setProducts(enriched);
+        setPage(0); // reset về trang đầu khi data đổi
       } catch (err) {
         console.error("Lỗi khi fetch:", err);
       }
@@ -97,78 +99,87 @@ export default function ProductListSlider() {
     fetchData();
   }, []);
 
-  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
-  const next = () => setPage((prev) => (prev + 1) % totalPages);
-  const prev = () => setPage((prev) => (prev - 1 + totalPages) % totalPages);
+  // Tạo các trang để render tất cả slides cùng lúc
+  const pages = useMemo(() => chunkArray(products, ITEMS_PER_PAGE), [products]);
+  const totalPages = pages.length || 1;
 
-  const visibleProducts = products.slice(
-    page * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE + ITEMS_PER_PAGE
-  );
+  const next = () => setPage((prev) => (prev + 1 < totalPages ? prev + 1 : 0));
+  const prev = () => setPage((prev) => (prev - 1 >= 0 ? prev - 1 : totalPages - 1));
 
-return (
-  <div className={styles.wrapper}>
-    <h2 className={styles.title}>Sản phẩm khuyến mãi</h2>
+  const currentPageItems = pages[page] ?? [];
+  const currentPromoName = currentPageItems[0]?.promotionName;
+  const currentEndDate = currentPageItems[0]?.endDate;
 
-    {/* Nếu không có sản phẩm thì hiển thị thông báo */}
-    {products.length === 0 ? (
-      <h2 className={styles.noPromo}>Hiện chưa có khuyến mãi,
-        Hẹn gặp lại quý khách!
-      </h2>
-    ) : (
-      <>
-        <div className={styles.promoContainer}>
-          {visibleProducts[0]?.promotionName && (
-            <p className={styles.promoName}>
-              {visibleProducts[0].promotionName}
-            </p>
-          )}
-          {visibleProducts[0]?.endDate && (
-            <CountdownTimer targetDate={visibleProducts[0].endDate} />
-          )}
-        </div>
+  return (
+    <div className={styles.wrapper}>
+      <h2 className={styles.title}>Sản phẩm khuyến mãi</h2>
 
-        <div className={styles.sliderContainer}>
-          <div
-            className={styles.sliderTrack}
-            style={{
-              transform: `translateX(-${page * 100}%)`,
-              transition: "transform 0.5s ease-in-out",
-            }}
-          >
-            <div className={styles.grid}>
-              {visibleProducts.map((p) => (
-                <ProductCard
-                  key={p.id}
-                  id={p.id}
-                  slug={p.slug ?? ""}
-                  name={p.name ?? ""}
-                  price={p.price ?? 0}
-                  originalPrice={p.originalPrice ?? 0}
-                  image={p.image ?? ""}
-                  sold={p.sold ?? 0}
-                  discount={p.discount ?? 0}
-                  average_rating={p.average_rating ?? 0}
-                  promotionName={p.promotionName}
-                  endDate={p.endDate}
-                />
+      {products.length === 0 ? (
+        <h2 className={styles.noPromo}>
+          Hiện chưa có khuyến mãi, hẹn gặp lại quý khách!
+        </h2>
+      ) : (
+        <>
+          <div className={styles.promoContainer}>
+            {currentPromoName && (
+              <p className={styles.promoName}>{currentPromoName}</p>
+            )}
+            {currentEndDate && <CountdownTimer targetDate={currentEndDate} />}
+          </div>
+
+          <div className={styles.sliderContainer}>
+            <div
+              className={styles.sliderTrack}
+              style={{
+                width: `${totalPages * 100}%`,
+                transform: `translateX(-${(100 / totalPages) * page}%)`,
+                transition: "transform 0.5s ease-in-out",
+                display: "flex",
+              }}
+            >
+              {pages.map((pageItems, idx) => (
+                <div
+                  key={`page-${idx}`}
+                  className={styles.slide}
+                  style={{
+                    width: `${100 / totalPages}%`,
+                    flexShrink: 0,
+                  }}
+                >
+                  <div className={styles.grid}>
+                    {pageItems.map((p) => (
+                      <ProductCard
+                        key={p.id}
+                        id={p.id}
+                        slug={p.slug}
+                        name={p.name}
+                        price={p.price}
+                        originalPrice={p.originalPrice}
+                        image={p.image}
+                        sold={p.sold}
+                        discount={p.discount}
+                        average_rating={p.average_rating}
+                        promotionName={p.promotionName}
+                        endDate={p.endDate}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
-        </div>
 
-        <div className={styles.controls}>
-          <button className={styles.arrow} onClick={prev}>
-            ◀
-          </button>
-          <button className={ButtonFromIntro.button}>Xem thêm</button>
-          <button className={styles.arrow} onClick={next}>
-            ▶
-          </button>
-        </div>
-      </>
-    )}
-  </div>
-);
-
+          <div className={styles.controls}>
+            <button className={styles.arrow} onClick={prev} disabled={pages.length <= 1}>
+              ◀
+            </button>
+            <button className={ButtonFromIntro.button}>Xem thêm</button>
+            <button className={styles.arrow} onClick={next} disabled={pages.length <= 1}>
+              ▶
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
 }

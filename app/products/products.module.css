@@ -560,6 +560,7 @@
 }
 @media (max-width: 768px) {
   .product-page {
+    margin-top: 130px;
     flex-direction: column;
     padding: 20px;
   }
@@ -594,7 +595,7 @@
 }
 @media (max-width: 480px) {
   .product-page{
-        margin-top: 120px;
+        margin-top: 150px;
 
   }
   .product-grid {

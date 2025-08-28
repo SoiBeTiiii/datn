@@ -6,7 +6,7 @@ import styles from "../css/ProductListSlider.module.css";
 import { fetchProducts } from "../../lib/productApi";
 import ProductCardProps from "../interface/ProductCardProps";
 
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 4;
 
 export default function ProductListSlider() {
   const [products, setProducts] = useState<ProductCardProps[]>([]);
@@ -18,6 +18,7 @@ export default function ProductListSlider() {
       .catch((err) => {
         console.error("Lỗi khi fetch sản phẩm:", err);
       });
+      
   }, []);
 
   const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
@@ -50,6 +51,7 @@ export default function ProductListSlider() {
                 type={p.type}
                 type_skin={p.type_skin}
                 variants={[]}
+                is_featured={false}
               />
             </div>
           ))}

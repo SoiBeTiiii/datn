@@ -67,6 +67,7 @@ export const fetchProducts = async (
       sold: item.sold_count,
       average_rating: item.average_rating ?? 0,
       variants: item.variants ?? [],
+      is_featured: item.is_featured ?? false,
     } as ProductCardProps;
   });
 };
@@ -212,6 +213,7 @@ export const fetchProductsByFilterKey = async (
       variants: item.variants ?? [],
       type: item.type ?? '', // Add type property
       type_skin: item.type_skin ?? '', // Add type_skin property
+      is_featured: item.is_featured ?? false,
     };
   });
 };

@@ -24,6 +24,85 @@
   background-color: rgba(0, 0, 0, 0.4);
   z-index: 100010; /* thấp hơn menuDrawer */
 }
+/* Auth row (Đăng nhập / Tên user) */
+.authRow {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+  background: #fff;
+}
+.authLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #111;
+}
+.authIcon {
+  opacity: 0.9;
+}
+.authName {
+  font-weight: 600;
+}
+
+/* --- Nếu chưa có từ trước, giữ nguyên các block dưới để layout y như bạn muốn --- */
+.brandSection {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 10px 12px 14px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  max-height: 70vh;
+  overflow-y: auto;
+}
+.brandNames {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.brandNameItem {
+  display: block;
+  text-decoration: none;
+  color: #111;
+  font-size: 15px;
+  line-height: 1.35;
+  padding: 2px 0;
+}
+.brandNameItem:hover {
+  color: #e11d48;
+}
+.brandGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.brandCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 20px;
+  overflow: hidden;
+  /* width: auto; */
+}
+.brandImg {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: contain;
+  background: #fafafa;
+}
+.brandCardTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #222;
+  padding: 0 10px 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .menuHeader {
   display: flex;

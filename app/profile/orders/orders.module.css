@@ -21,7 +21,11 @@
   justify-content: center;
   margin-bottom: 20px;
 }
-
+.productImage{
+  /* gap: 20px; */
+  margin: 10px 5px;
+  border-radius: 20px;
+}
 /* Pagination */
 .pagination {
   display: flex;

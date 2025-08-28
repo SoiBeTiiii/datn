@@ -3,19 +3,24 @@
 import styles from "../css/WishlistDrawer.module.css";
 import { MdClose, MdDelete } from "react-icons/md";
 import { useState, useEffect } from "react";
-import { getWishlists, WishlistItem } from "../../lib/wishlistApi";
+import { getWishlists, WishlistItem } from '../../lib/wishlistApi';
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-// import Cookies from "js-cookie"; // ❌ không dùng cho httpOnly
-// (tùy chọn) nếu bạn có AuthContext:
-// import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
+
+import {
+  wishlistCache,
+  seedFromLS,
+  saveToLS,
+  removeFromCache,
+  rebuildSetFromList,
+} from "../../lib/wishlistCache";
 
 interface WishlistDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  // ⚠️ Bạn đang không dùng 2 props dưới. Giữ lại nếu parent cần, nhưng component render dựa trên state nội bộ.
-  wishlistItems?: any[];
-  onAddToWishlist?: (slug: string) => Promise<void>;
+  WishlistItems: any[];
+  onAddToWishlist: (slug: string) => Promise<void>;
   onRemoveFromWishlist: (slug: string) => Promise<void>;
 }
 
@@ -23,63 +28,76 @@ export default function WishlistDrawer({
   isOpen,
   onClose,
   onRemoveFromWishlist,
+  
 }: WishlistDrawerProps) {
+  const { user } = useAuth();
+  const userKey = user?.email || null;
+
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
-  // const { user } = useAuth(); // nếu có context
 
-  const isUserLoggedIn = () => {
-    // ✅ Dùng localStorage đúng với nơi bạn lưu token khi login
-    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
-    // hoặc nếu có context: return !!user;
-    return !!token;
-  };
-
+  // Khi mở Drawer: seed từ LS + fetch 1 lần nếu cần
   useEffect(() => {
-    const fetchWishlist = async () => {
-      try {
-        if (!isUserLoggedIn()) {
-          setLoginModalOpen(true);
-          return;
-        }
+    let cancelled = false;
+    if (!isOpen) return;
 
-        const resp = await getWishlists();
-        // ✅ Chuẩn hóa: cố gắng lấy mảng ở các shape phổ biến
-        const items =
-          Array.isArray((resp as any)?.data) ? (resp as any).data :
-          Array.isArray((resp as any)?.data?.data) ? (resp as any).data.data :
-          Array.isArray(resp) ? (resp as any) :
-          [];
+    if (!userKey) {
+      setLoginModalOpen(true);
+      setWishlistItems([]);
+      return;
+    }
 
-        setWishlistItems(items);
-      } catch (error: any) {
-        if (error?.response?.status === 401) {
-          toast.info("Vui lòng đăng nhập để sử dụng wishlist 🔐");
-          setLoginModalOpen(true);
-        } else {
-          console.error("Wishlist fetch error:", error);
-          toast.error("Đã xảy ra lỗi, vui lòng thử lại sau 😢");
-        }
-      }
+    if (wishlistCache.loadedFor !== userKey) {
+      seedFromLS(userKey);
+    }
+    setWishlistItems([...wishlistCache.list]);
+
+    const load = async () => {
+      // có cache hợp lệ thì thôi
+      if (wishlistCache.loadedFor === userKey && wishlistCache.list.length > 0) return;
+
+      const resp = await getWishlists();
+      const items: WishlistItem[] =
+        Array.isArray((resp as any)?.data) ? (resp as any).data :
+        Array.isArray((resp as any)?.data?.data) ? (resp as any).data.data :
+        Array.isArray(resp) ? (resp as any) : [];
+
+      wishlistCache.list = items;
+      rebuildSetFromList();
+      wishlistCache.loadedFor = userKey;
+      saveToLS(userKey);
+
+      if (!cancelled) setWishlistItems([...wishlistCache.list]);
     };
 
-    if (isOpen) {
-      fetchWishlist();
-    }
-  }, [isOpen]);
+    load().catch((error: any) => {
+      if (error?.response?.status === 401) {
+        toast.info("Vui lòng đăng nhập để sử dụng wishlist 🔐");
+        setLoginModalOpen(true);
+      } else {
+        console.error("Wishlist fetch error:", error);
+        toast.error("Đã xảy ra lỗi, vui lòng thử lại sau 😢");
+      }
+    });
+
+    return () => { cancelled = true; };
+  }, [isOpen, userKey]);
 
   const handleRemoveFromWishlist = async (slug: string) => {
     try {
       await onRemoveFromWishlist(slug);
-      // refetch sau khi xóa
-      const resp = await getWishlists();
-      const items =
-        Array.isArray((resp as any)?.data) ? (resp as any).data :
-        Array.isArray((resp as any)?.data?.data) ? (resp as any).data.data :
-        Array.isArray(resp) ? (resp as any) :
-        [];
-      setWishlistItems(items);
 
+      // lấy item vừa xoá để lấy id (nếu có)
+      const removed = wishlistCache.list.find(
+        (it: any) => it?.slug === slug || it?.product?.slug === slug
+      );
+      const id = removed?.id ?? removed?.product_id ?? removed?.product?.id;
+
+      // xoá cả slug & id trong cache + lưu LS + phát event
+      removeFromCache(userKey, slug, id);
+
+      // sync UI Drawer
+      setWishlistItems([...wishlistCache.list]);
       toast.success("Đã xóa khỏi danh sách yêu thích 💔");
     } catch (error: any) {
       if (error?.response?.status === 401) {
@@ -96,11 +114,10 @@ export default function WishlistDrawer({
     <>
       <div className={`${styles.overlay} ${isOpen ? styles.open : ""}`}>
         <div className={styles.backdrop} onClick={onClose} />
-
         <div className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ""}`}>
           <div className={styles.header}>
             <h3>Đã thích</h3>
-            <button onClick={onClose} className={styles.closeBtn}>
+            <button onClick={onClose} className={styles.closeBtn} aria-label="Đóng">
               <MdClose size={24} />
             </button>
           </div>
@@ -108,7 +125,6 @@ export default function WishlistDrawer({
           <div className={styles.content}>
             {Array.isArray(wishlistItems) && wishlistItems.length > 0 ? (
               wishlistItems.map((item) => {
-                // Phòng khi API thiếu variants hoặc mảng rỗng
                 const basePrice =
                   item?.variants?.[0]?.sale_price ??
                   item?.variants?.[0]?.price ??
@@ -141,6 +157,7 @@ export default function WishlistDrawer({
                       className={styles.removeBtn}
                       onClick={() => handleRemoveFromWishlist(item.slug)}
                       aria-label="Xóa khỏi wishlist"
+                      title="Xóa khỏi yêu thích"
                     >
                       <MdDelete size={20} />
                     </button>
@@ -157,7 +174,14 @@ export default function WishlistDrawer({
       {/* Modal đăng nhập nếu chưa đăng nhập */}
       {isLoginModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg w-80">
+          <div className="bg-white p-6 rounded shadow-lg w-80 relative">
+            <button
+              className="absolute top-2 right-3 text-xl"
+              aria-label="Đóng"
+              onClick={() => setLoginModalOpen(false)}
+            >
+              &times;
+            </button>
             <h2 className="text-lg font-semibold mb-4">Vui lòng đăng nhập</h2>
             <p className="mb-4 text-sm text-gray-600">
               Bạn cần đăng nhập để sử dụng wishlist.
@@ -166,7 +190,7 @@ export default function WishlistDrawer({
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
               onClick={() => {
                 setLoginModalOpen(false);
-                // ví dụ: router.push("/login")
+                // router.push("/login") nếu muốn
               }}
             >
               Đăng nhập

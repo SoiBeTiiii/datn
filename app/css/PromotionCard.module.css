@@ -15,7 +15,22 @@
 }
 
 /* LoginModal.module.css */
+.closeBtn {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
 
+.closeBtn:hover {
+  color: #0070f3; /* xanh khi hover */
+}
 .overlay {
   position: fixed;
   inset: 0;
@@ -25,9 +40,11 @@
   align-items: center;
   z-index: 9999;
   animation: fadeIn 0.3s ease-in-out;
+  margin: 0 auto;
 }
 
 .modal {
+  position: relative; /* để .closeBtn bám theo modal */
   background-color: #fff;
   padding: 24px;
   border-radius: 8px;
@@ -74,6 +91,13 @@
   transform: translateY(-6px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 }
+/* PromotionCard.module.css */
+.wishlistActive {
+  /* ví dụ: tô nền mờ khi đã tym */
+  background-color: rgba(255, 0, 0, 0.08);
+  border-radius: 9999px;
+}
+
 .wishlist {
   background-color: transparent;
   border: none;

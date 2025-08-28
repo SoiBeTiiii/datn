@@ -71,7 +71,6 @@ export default function ProductListSlider() {
 
           const variants = product.variants || [];
 
-          // Chuẩn hoá field để card dùng
           return {
             id: product.id,
             slug: product.slug ?? "",
@@ -90,7 +89,7 @@ export default function ProductListSlider() {
         });
 
         setProducts(enriched);
-        setPage(0); // reset về trang đầu khi data đổi
+        setPage(0);
       } catch (err) {
         console.error("Lỗi khi fetch:", err);
       }
@@ -109,6 +108,10 @@ export default function ProductListSlider() {
   const currentPageItems = pages[page] ?? [];
   const currentPromoName = currentPageItems[0]?.promotionName;
   const currentEndDate = currentPageItems[0]?.endDate;
+
+  // Tránh NaN khi totalPages = 0 (dù đã fallback = 1)
+  const trackWidthPct = Math.max(totalPages, 1) * 100;
+  const translatePct = (100 / Math.max(totalPages, 1)) * page;
 
   return (
     <div className={styles.wrapper}>
@@ -131,19 +134,22 @@ export default function ProductListSlider() {
             <div
               className={styles.sliderTrack}
               style={{
-                width: `${totalPages * 100}%`,
-                transform: `translateX(-${(100 / totalPages) * page}%)`,
+                width: `${trackWidthPct}%`,
+                transform: `translateX(-${translatePct}%)`,
                 transition: "transform 0.5s ease-in-out",
                 display: "flex",
+                willChange: "transform",
               }}
             >
               {pages.map((pageItems, idx) => (
                 <div
                   key={`page-${idx}`}
-                  className={styles.slide}
+                  className={`${styles.slide} ${styles.slidePage ?? ""}`}
+                  // KHÔNG dùng shorthand flex để tránh cảnh báo
                   style={{
-                    width: `${100 / totalPages}%`,
+                    flexGrow: 0,
                     flexShrink: 0,
+                    flexBasis: `${100 / Math.max(totalPages, 1)}%`,
                   }}
                 >
                   <div className={styles.grid}>

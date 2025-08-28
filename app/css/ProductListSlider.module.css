@@ -54,6 +54,14 @@
   cursor: pointer;
     transition: background-color 0.3s ease;
 }
+/* Optional: giúp định nghĩa 1 "trang" slide rõ ràng, tránh phải inline nhiều */
+.slidePage {
+  flex-grow: 0;
+  flex-shrink: 0;
+  /* flex-basis sẽ set động bằng CSS var hoặc inline style */
+  /* flex-basis: var(--page-basis, 100%); */
+}
+
 .arrow:hover {
   background: #d96e6e;
 }

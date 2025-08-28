@@ -403,7 +403,7 @@ export default function Header() {
       <WishlistDrawer
         isOpen={wishlistOpen}
         onClose={() => setWishlistOpen(false)}
-        wishlistItems={wishlistItems}
+        WishlistItems={wishlistItems}
         onAddToWishlist={handleAddToWishlist}
         onRemoveFromWishlist={handleRemoveFromWishlist}
       />

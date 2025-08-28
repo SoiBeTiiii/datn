@@ -460,8 +460,7 @@ export default function ProductDetailPage() {
                     average_rating={rel.average_rating}
                     variants={[]}
                     type={undefined}
-                    type_skin={""}
-                  />
+                    type_skin={""} is_featured={false}                  />
                 </div>
               ))}
             </div>

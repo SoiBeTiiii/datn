@@ -81,7 +81,7 @@ export default function BlogDetailPage() {
                   )
                   : 0}
                 sold={typeof product.sold === 'number' ? product.sold : 0}
-                brand={typeof product.brand === 'string' ? product.brand : String(product.brand ?? 'No brand')} variants={[]} type={''} type_skin={''}              />
+                brand={typeof product.brand === 'string' ? product.brand : String(product.brand ?? 'No brand')} variants={[]} type={''} type_skin={''} is_featured={false}              />
             ))}
           </div>
         </div>

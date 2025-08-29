@@ -33,7 +33,7 @@ export default function NewsSection() {
             id={n.id} content={n.content} category={n.category}          />
         ))}
       </div>
-      <button className={styles.button}>Xem thêm tin tức khác →</button>
+      <Link className={styles.button} href={'/blog'}>Xem thêm tin tức khác →</Link>
     </section>
   );
 }

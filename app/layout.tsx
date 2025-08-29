@@ -9,6 +9,8 @@ import { AuthProvider } from "./context/AuthContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Chatbot from "./components/Chatbot"; // thêm chatbot nếu cần
+import ClientBootstrap from "./ClientBootstrap"; // <-- thêm dòng này
+
 export const metadata = {
   title: "Egomall",
   description: "I have followed setup instructions carefully",
@@ -25,6 +27,7 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <CartProvider>
+            <ClientBootstrap />
             <Chatbot />
             <ClientLayout>{children}</ClientLayout>
             <ToastContainer position="top-right" autoClose={3000} />

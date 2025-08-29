@@ -57,7 +57,7 @@ export default function ProductListSlider() {
               price && finalPrice && price > finalPrice
                 ? Math.round(((price - finalPrice) / price) * 100)
                 : 0,
-            sold: item.sold ?? 0,
+            sold_count: item.sold_count ?? 0,
             average_rating: item.average_rating ?? 0,
             type_skin: item.type_skin ?? "",
             is_featured: item.is_featured ?? false,

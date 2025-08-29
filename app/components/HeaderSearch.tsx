@@ -256,6 +256,8 @@ export default function Header() {
                       className={styles.resultImage}
                     />
                     <span>{item.name}</span>
+                    <span>{item.sold_count}</span>
+                    <span>{item.rating}</span>
                   </li>
                 ))}
               </ul>
@@ -271,7 +273,7 @@ export default function Header() {
             <Link href="/blog" className={styles.iconLink}>
               <div className={styles.iconItem}>
                 <MdEdit size={20} />
-                <span>Blog</span>
+                <span>Bài viết</span>
               </div>
             </Link>
 
@@ -286,7 +288,7 @@ export default function Header() {
                 </Link>
                 <div className={styles.dropdownContent}>
                   <button onClick={logout} className={styles.logoutButton}>
-                    Đăng xuất
+                   <span className={styles.logoutText}>Đăng xuất</span>
                   </button>
                 </div>
               </div>

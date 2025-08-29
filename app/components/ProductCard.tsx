@@ -50,7 +50,7 @@ export default function ProductCard({
   price,
   originalPrice,
   discount,
-  sold = 0,
+  sold_count,
   average_rating = 0,
   type_skin,
 }: ProductCardProps) {
@@ -255,10 +255,10 @@ export default function ProductCard({
         <div className={styles.progress}>
           <div
             className={styles.bar}
-            style={{ width: `${Math.min(Number(sold) || 0, 100)}%` }}
+            style={{ width: `${Math.min(Number(sold_count) || 0, 100)}%` }}
           />
         </div>
-        <p className={styles.sold}>{sold} sản phẩm đã bán</p>
+        <p className={styles.sold}>{sold_count} sản phẩm đã bán</p>
 
         <div className={styles.actions}>
           {/* <button className={styles.buy} onClick={handleBuyNow}>MUA NGAY</button>

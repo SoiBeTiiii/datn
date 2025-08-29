@@ -529,7 +529,7 @@ export default function ProductDetailPage() {
                     discount={Math.round(
                       100 - (rel.sale_price * 100) / rel.price
                     )}
-                    sold={rel.sold_count}
+                    sold_count={rel.sold_count}
                     average_rating={rel.average_rating}
                     variants={[]}
                     type={undefined}

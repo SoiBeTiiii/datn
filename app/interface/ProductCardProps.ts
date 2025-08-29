@@ -7,13 +7,13 @@ export default interface ProductCardProps {
   name: string;
   slug: string;
   image: string;
-  brand: string ;
+  brand: string;
   price: number;
   originalPrice?: number | null;
   discount?: number;
-  sold?: number;
+  sold_count?: number;
   average_rating?: number;
-      type: any;
+  type: any;
   type_skin: string;
 
 }

@@ -8,12 +8,12 @@ import Category  from './Category';
 
 // interface/Product.ts
 export interface Product {
-  sold: string;
+  sold_count: number;
   id: number;
   name: string;
   slug: string;
   category: number;
-  brand: number;
+  brand: string;
   type_skin: string | null;
   description: string;
   image: string;

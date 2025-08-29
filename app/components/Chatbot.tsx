@@ -80,14 +80,10 @@ export default function Chatbot() {
     let loopInterval: NodeJS.Timeout;
     let shakeInterval: NodeJS.Timeout;
 
-    const playGreetingSound = () => {
-      const audio = new Audio("/sound/greeting.mp3");
-      audio.play().catch(() => {});
-    };
+  
 
     const loop = () => {
       setShowGreetingBubble(true);
-      playGreetingSound();
       setTimeout(() => setShowGreetingBubble(false), 4000);
     };
 

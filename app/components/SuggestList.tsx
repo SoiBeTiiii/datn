@@ -47,7 +47,7 @@ export default function ProductListSlider() {
                 price={p.price}
                 originalPrice={p.originalPrice}
                 image={p.image}
-                sold={p.sold}
+                sold_count={p.sold_count}
                 discount={p.discount}
                 average_rating={p.average_rating}
                 type={p.type}

@@ -79,11 +79,29 @@
 }
 
 .logoutButton {
-  background: none;
-  border: none;
-  color: red;
-  cursor: pointer;
+  background-color: #fdecea;   /* nền đỏ nhạt */
+  border: none;                /* bỏ viền mặc định */
+  color: #c0392b;              /* chữ đỏ đậm */
+  font-weight: 700;            /* chữ đậm */
+  padding: 8px 16px;          
+  border-radius: 8px;          /* bo góc */
+  cursor: pointer;             /* con trỏ bàn tay khi hover */
+  transition: all 0.2s ease;   /* hiệu ứng mượt */
 }
+.logoutText {
+  /* justify-content: center; */
+  margin: 0 auto;     
+  padding: 16px;       /* khoảng cách giữa biểu tượng và chữ */
+}
+.logoutButton:hover {
+  background-color: #f8d7da;   /* nền đậm hơn khi hover */
+  color: #a93226;              /* chữ đỏ sậm hơn */
+}
+
+.logoutButton:active {
+  transform: scale(0.96);      /* hiệu ứng nhỏ lại khi click */
+}
+
 
 .logo {
   width: 45%;

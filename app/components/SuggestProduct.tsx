@@ -22,7 +22,7 @@ export default function ProductCard({
   price,
   originalPrice,
   discount,
-  sold = 0,
+  sold_count,
   average_rating = 0,
 }: ProductCardProps) {
   const { addToCart } = useCart();
@@ -147,9 +147,9 @@ const handleAddToWishlist = async (e: React.MouseEvent) => {
         </div>
 
         <div className={styles.progress}>
-          <div className={styles.bar} style={{ width: `${sold}%` }}></div>
+          <div className={styles.bar} style={{ width: `${sold_count}%` }}></div>
         </div>
-        <p className={styles.sold}>{sold} sản phẩm đã bán</p>
+        <p className={styles.sold}>{sold_count} sản phẩm đã bán</p>
 
         <div className={styles.actions}>
           <button className={styles.wishlist} onClick={(e) => handleAddToWishlist(e)}>

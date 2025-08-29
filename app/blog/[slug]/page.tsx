@@ -1,13 +1,13 @@
-'use client'
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import { fetchBlogBySlug } from '@/lib/blogApi';
-import styles from './BlogDetail.module.css';
-import Category from '../../interface/Category';
-import BlogDetailProps from '@/app/interface/blogDetail';
-import BlogCard from '@/app/components/BlogCard';
-import ProductCard from '@/app/components/ProductCard';
-import BackToHomeButton from '@/app/components/BackToHomeButton';
+"use client";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { fetchBlogBySlug } from "@/lib/blogApi";
+import styles from "./BlogDetail.module.css";
+import Category from "../../interface/Category";
+import BlogDetailProps from "@/app/interface/blogDetail";
+import BlogCard from "@/app/components/BlogCard";
+import ProductCard from "@/app/components/ProductCard";
+import BackToHomeButton from "@/app/components/BackToHomeButton";
 
 export default function BlogDetailPage() {
   const params = useParams();
@@ -19,8 +19,8 @@ export default function BlogDetailPage() {
 
   useEffect(() => {
     const loadBlog = async () => {
-      if (typeof slug !== 'string') {
-        console.warn('❌ Slug không hợp lệ:', slug);
+      if (typeof slug !== "string") {
+        console.warn("❌ Slug không hợp lệ:", slug);
         return;
       }
 
@@ -29,7 +29,7 @@ export default function BlogDetailPage() {
         setBlog(data.blog);
         setRelated(data.related_blogs || []);
       } else {
-        console.warn('❌ Không có blog trong response');
+        console.warn("❌ Không có blog trong response");
       }
 
       setLoading(false);
@@ -55,12 +55,16 @@ export default function BlogDetailPage() {
       </div>
 
       {/* Mô tả ngắn nổi bật */}
-      {blog.excerpt && <p className={styles.excerpt}><strong>{blog.excerpt}</strong></p>}
+      {blog.excerpt && (
+        <p className={styles.excerpt}>
+          <strong>{blog.excerpt}</strong>
+        </p>
+      )}
 
       {/* Nội dung HTML */}
       <div
         className={styles.content}
-        dangerouslySetInnerHTML={{ __html: blog.content || '' }}
+        dangerouslySetInnerHTML={{ __html: blog.content || "" }}
       />
 
       {/* Sản phẩm liên quan */}
@@ -77,13 +81,23 @@ export default function BlogDetailPage() {
                 image={product.image}
                 price={product.variants?.[0]?.sale_price ?? 0}
                 originalPrice={product.variants?.[0]?.price ?? 0}
-                discount={product.variants?.[0]?.sale_price
-                  ? Math.round(
-                    100 - (product.variants[0].sale_price * 100) / product.variants[0].price
-                  )
-                  : 0}
-                sold={typeof product.sold === 'number' ? product.sold : 0}
-                brand={typeof product.brand === 'string' ? product.brand : String(product.brand ?? 'No brand')} variants={[]} type={''} type_skin={''} is_featured={false}              />
+                discount={
+                  product.variants?.[0]?.sale_price
+                    ? Math.round(
+                        100 -
+                          (product.variants[0].sale_price * 100) /
+                            product.variants[0].price
+                      )
+                    : 0
+                }
+                average_rating={product.average_rating}
+                sold_count={product.sold_count}
+                brand={product.brand}
+                is_featured={false}
+                variants={[]}
+                type={undefined}
+                type_skin={""}
+              />
             ))}
           </div>
         </div>
@@ -101,9 +115,9 @@ export default function BlogDetailPage() {
                 title={item.title}
                 image_url={item.image_url}
                 excerpt={item.excerpt}
-                category={item.category as Category} 
-                id={0} 
-                content={''}
+                category={item.category as Category}
+                id={0}
+                content={""}
               />
             ))}
           </div>

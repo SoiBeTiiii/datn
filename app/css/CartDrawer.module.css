@@ -17,6 +17,23 @@
 .open {
   pointer-events: auto;
 }
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  font-weight: bold;
+  color: #555;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.closeBtn:hover {
+  color: #e74c3c; /* đỏ khi hover */
+}
+
+.closeBtn:active {
+  transform: scale(0.9);
+}
 
 
 .checkoutBtn[disabled] { opacity: .6; cursor: not-allowed; }

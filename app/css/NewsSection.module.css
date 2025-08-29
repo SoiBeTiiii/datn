@@ -34,19 +34,6 @@
   background-color: #db69a0;
 }
 
-/* Responsive */
-
-@media screen and (max-width: 1024px) {
-  .Newgrid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .title {
-    font-size: 1.8rem;
-  }
-  .button {
-    font-size: 0.9rem;
-  }
-}
 
 /* Mobile lớn - Hiển thị 2 cột */
 @media screen and (max-width: 768px) {
@@ -63,9 +50,10 @@
 }
 
 /* Mobile nhỏ - Hiển thị 1 cột */
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 430px) {
   .section{
-    margin: 0 auto;
+    padding: 24px 0px;
+    /* margin-right: 100px; */
   }
   .Newgrid {
     margin-left: 50px;

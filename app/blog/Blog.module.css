@@ -1,8 +1,9 @@
+/* --------- Base --------- */
 .container {
   padding: 24px;
-  background: white;
-  font-family: sans-serif;
-  padding-top: 160px;
+  background: #fff;
+  font-family: 'Times New Roman', Times, serif;
+  padding-top: 180px;
 }
 
 .breadcrumb {
@@ -13,12 +14,14 @@
 
 .title {
   text-align: center;
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.25;
 }
 
 .featured {
   display: flex;
+  align-items: stretch;
   margin-top: 20px;
   gap: 24px;
 }
@@ -27,6 +30,7 @@
   width: 30%;
   border-radius: 8px;
   object-fit: cover;
+  aspect-ratio: 16/10;       /* giữ tỉ lệ đẹp */
 }
 
 .featuredContent {
@@ -35,13 +39,13 @@
 
 .category {
   color: #ff69b4;
-  font-weight: bold;
+  font-weight: 700;
   font-size: 14px;
 }
 
 .featuredTitle {
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 20px;
+  font-weight: 800;
   margin: 8px 0;
 }
 
@@ -53,8 +57,8 @@
 .subheading {
   margin-top: 40px;
   text-align: center;
-  font-size: 20px;
-  font-weight: bold;
+  font-size: 22px;
+  font-weight: 800;
 }
 
 .tabs {
@@ -63,6 +67,7 @@
   gap: 16px;
   margin: 12px 0;
   font-size: 14px;
+  flex-wrap: wrap;
 }
 
 .tabs span {
@@ -72,12 +77,12 @@
 
 .active {
   color: #ff1493;
-  font-weight: bold;
+  font-weight: 800;
 }
 
+/* Grid mặc định 4 cột trên PC lớn */
 .grid {
   display: grid;
-  /* grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); */
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-top: 16px;
@@ -90,10 +95,126 @@
 
 .more button {
   background: #f06292;
-  color: white;
+  color: #fff;
   border: none;
   padding: 10px 24px;
   border-radius: 20px;
   cursor: pointer;
 }
 
+/* Nút back */
+.backBtn {
+  position: absolute;
+  top: 180px;
+  left: 25px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  display: none; /* mặc định ẩn trên PC */
+  z-index: 997;
+}
+
+.backBtnPC {
+  position: absolute;
+  top: 180px;
+  left: 25px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  z-index: 998;
+  transition: 0.3s ease-in;
+  height: auto;
+}
+
+.backBtnPC:hover {
+  background-color: #1e40af; /* xanh đậm */
+  color: #fff;
+  border-radius: 100%;
+  height: 25px;
+  transition: 0.3s ease;
+}
+
+/* --------- Breakpoints --------- */
+
+/* <= 1200px: giảm grid xuống 3 cột, co heading một chút */
+@media (max-width: 1200px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .title {
+    font-size: 26px;
+  }
+}
+
+/* <= 992px (tablet landscape): featured thoáng hơn, grid 2-3 cột */
+@media (max-width: 992px) {
+  .featured {
+    gap: 16px;
+  }
+  .featuredImg {
+    width: 40%;
+  }
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+}
+
+/* <= 768px (tablet / mobile lớn): featured chuyển sang cột, grid 2 cột */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+    padding-top: 140px; /* bớt khoảng trống header */
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .featured {
+    flex-direction: column;
+  }
+  .featuredImg {
+    width: 100%;
+    max-height: 280px;      /* tránh ảnh quá cao */
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* Hiện nút back mobile, ẩn bản PC nếu bạn muốn */
+  .backBtn {
+    display: block;
+  }
+  /* .backBtnPC { display: none; }  // bật nếu muốn ẩn ở mobile */
+}
+
+/* <= 480px (mobile nhỏ): chữ nhỏ hơn, grid 1 cột */
+@media (max-width: 480px) {
+  .container{
+    margin-top: 40px;
+  }
+  .title {
+    font-size: 20px;
+  }
+  .backBtnPC{
+    display: none;
+  }
+  .featuredTitle {
+    font-size: 18px;
+  }
+  .excerpt, .tabs {
+    font-size: 13px;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .more button {
+    width: 100%;
+  }
+}

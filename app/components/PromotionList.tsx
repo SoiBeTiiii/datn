@@ -8,6 +8,7 @@ import ButtonFromIntro from "../css/IntroSlider.module.css";
 import { fetchProducts } from "../../lib/productApi";
 import { fetchPromotions } from "../../lib/PromoApi";
 import ProductCardProps from "../interface/PromotionCard";
+import { useRouter } from "next/navigation";
 
 const ITEMS_PER_PAGE = 4;
 
@@ -21,6 +22,7 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
 export default function ProductListSlider() {
   const [products, setProducts] = useState<ProductCardProps[]>([]);
   const [page, setPage] = useState(0);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,45 +50,53 @@ export default function ProductListSlider() {
           parentIds.has(p.id)
         );
 
-        const enriched: ProductCardProps[] = filteredProducts.map((product: any) => {
-          const matchingPromo = Object.values(promoData).find((promo: any) => {
-            if (promo.type === "variant") return promo.parentProduct === product.id;
-            if (promo.type === "product") return promo.productId === product.id;
-            return false;
-          });
-
-          let promotionLabel = "";
-          const cond = matchingPromo?.conditions;
-          if (cond) {
-            if (cond.type === "discount") {
-              if (cond.discountType === "percentage") {
-                promotionLabel = `Giảm ${cond.value}%`;
-              } else if (cond.discountType === "fixed_amount") {
-                promotionLabel = `Giảm ${Number(cond.value).toLocaleString()}đ`;
+        const enriched: ProductCardProps[] = filteredProducts.map(
+          (product: any) => {
+            const matchingPromo = Object.values(promoData).find(
+              (promo: any) => {
+                if (promo.type === "variant")
+                  return promo.parentProduct === product.id;
+                if (promo.type === "product")
+                  return promo.productId === product.id;
+                return false;
               }
-            } else if (cond.type === "buy_get") {
-              promotionLabel = `Mua ${cond.buyQuantity} tặng ${cond.getQuantity}`;
+            );
+
+            let promotionLabel = "";
+            const cond = matchingPromo?.conditions;
+            if (cond) {
+              if (cond.type === "discount") {
+                if (cond.discountType === "percentage") {
+                  promotionLabel = `Giảm ${cond.value}%`;
+                } else if (cond.discountType === "fixed_amount") {
+                  promotionLabel = `Giảm ${Number(
+                    cond.value
+                  ).toLocaleString()}đ`;
+                }
+              } else if (cond.type === "buy_get") {
+                promotionLabel = `Mua ${cond.buyQuantity} tặng ${cond.getQuantity}`;
+              }
             }
+
+            const variants = product.variants || [];
+
+            return {
+              id: product.id,
+              slug: product.slug ?? "",
+              name: product.name ?? "",
+              image: product.image ?? "",
+              price: product.price ?? 0,
+              originalPrice: product.originalPrice ?? 0,
+              sold: product.sold ?? product.sold_count ?? 0,
+              discount: product.discount ?? 0,
+              average_rating: product.average_rating ?? 0,
+              promotionName: matchingPromo?.promotionName,
+              endDate: matchingPromo?.endDate,
+              promotionLabel,
+              variants,
+            };
           }
-
-          const variants = product.variants || [];
-
-          return {
-            id: product.id,
-            slug: product.slug ?? "",
-            name: product.name ?? "",
-            image: product.image ?? "",
-            price: product.price ?? 0,
-            originalPrice: product.originalPrice ?? 0,
-            sold: product.sold ?? product.sold_count ?? 0,
-            discount: product.discount ?? 0,
-            average_rating: product.average_rating ?? 0,
-            promotionName: matchingPromo?.promotionName,
-            endDate: matchingPromo?.endDate,
-            promotionLabel,
-            variants,
-          };
-        });
+        );
 
         setProducts(enriched);
         setPage(0);
@@ -103,7 +113,8 @@ export default function ProductListSlider() {
   const totalPages = pages.length || 1;
 
   const next = () => setPage((prev) => (prev + 1 < totalPages ? prev + 1 : 0));
-  const prev = () => setPage((prev) => (prev - 1 >= 0 ? prev - 1 : totalPages - 1));
+  const prev = () =>
+    setPage((prev) => (prev - 1 >= 0 ? prev - 1 : totalPages - 1));
 
   const currentPageItems = pages[page] ?? [];
   const currentPromoName = currentPageItems[0]?.promotionName;
@@ -176,11 +187,24 @@ export default function ProductListSlider() {
           </div>
 
           <div className={styles.controls}>
-            <button className={styles.arrow} onClick={prev} disabled={pages.length <= 1}>
+            <button
+              className={styles.arrow}
+              onClick={prev}
+              disabled={pages.length <= 1}
+            >
               ◀
             </button>
-            <button className={ButtonFromIntro.button}>Xem thêm</button>
-            <button className={styles.arrow} onClick={next} disabled={pages.length <= 1}>
+            <button
+              className={ButtonFromIntro.button}
+              onClick={() => router.push("/promotion")}
+            >
+              Xem thêm
+            </button>
+            <button
+              className={styles.arrow}
+              onClick={next}
+              disabled={pages.length <= 1}
+            >
               ▶
             </button>
           </div>

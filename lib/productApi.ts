@@ -219,3 +219,76 @@ export const fetchProductsByFilterKey = async (
 };
 
 
+export const fetchPromotedProducts = async (): Promise<ProductCardProps[]> => {
+  const res = await baseAxios.get("/products?has_promotion=1");
+  const data = res.data as { data: any[] };
+
+  return (data.data || []).map((item) => {
+    const sortedVariants = (item.variants || []).sort((a: ProductVariant, b: ProductVariant) => {
+      const priceA = (a as any).final_price_discount ?? a.sale_price ?? a.price;
+      const priceB = (b as any).final_price_discount ?? b.sale_price ?? b.price;
+      return (priceA ?? Infinity) - (priceB ?? Infinity);
+    });
+
+    const variant = sortedVariants[0];
+    const price = (variant as any)?.final_price_discount ?? variant?.sale_price ?? variant?.price ?? 0;
+    const originalPrice = variant?.price ?? 0;
+    const discount =
+      originalPrice > 0 && price > 0
+        ? Math.round(((originalPrice - price) / originalPrice) * 100)
+        : 0;
+
+    return {
+      id: item.id,
+      name: item.name,
+      slug: item.slug,
+      image: item.image,
+      brand: item.brand?.name,
+      price,
+      originalPrice,
+      discount,
+      sold: item.sold_count ?? 0,
+      average_rating: item.average_rating ?? 0,
+      variants: item.variants ?? [],
+      type_skin: item.type_skin ?? "",
+      is_featured: item.is_featured ?? false,
+    } as ProductCardProps;
+  });
+};
+
+export const fetchFeaturedProducts = async (): Promise<ProductCardProps[]> => {
+  const res = await baseAxios.get("/products?is_featured=1");
+  const data = res.data as { data: any[] };
+
+  return (data.data || []).map((item) => {
+    const sortedVariants = (item.variants || []).sort((a: ProductVariant, b: ProductVariant) => {
+      const priceA = (a as any).final_price_discount ?? a.sale_price ?? a.price;
+      const priceB = (b as any).final_price_discount ?? b.sale_price ?? b.price;
+      return (priceA ?? Infinity) - (priceB ?? Infinity);
+    });
+
+    const variant = sortedVariants[0];
+    const price = (variant as any)?.final_price_discount ?? variant?.sale_price ?? variant?.price ?? 0;
+    const originalPrice = variant?.price ?? 0;
+    const discount =
+      originalPrice > 0 && price > 0
+        ? Math.round(((originalPrice - price) / originalPrice) * 100)
+        : 0;
+
+    return {
+      id: item.id,
+      name: item.name,
+      slug: item.slug,
+      image: item.image,
+      brand: item.brand?.name,
+      price,
+      originalPrice,
+      discount,
+      sold: item.sold_count ?? 0,
+      average_rating: item.average_rating ?? 0,
+      variants: item.variants ?? [],
+      type_skin: item.type_skin ?? "",
+      is_featured: item.is_featured ?? false,
+    } as ProductCardProps;
+  });
+};

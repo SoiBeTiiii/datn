@@ -21,7 +21,9 @@ export default function ProductsPage() {
   const [availableTypeSkins, setAvailableTypeSkins] = useState<string[]>([]);
   const [products, setProducts] = useState<ProductCardProps[]>([]);
   const [sort, setSort] = useState<string>(sortParam);
-  const [brands, setBrands] = useState<string[]>(brandParam ? [brandParam] : []);
+  const [brands, setBrands] = useState<string[]>(
+    brandParam ? [brandParam] : []
+  );
   const [types, setTypes] = useState<string[]>([]);
   const [typeSkin, setTypeSkin] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<string[]>([]);
@@ -67,7 +69,16 @@ export default function ProductsPage() {
     };
 
     fetchData();
-  }, [searchParams, sort, brands, types, typeSkin, priceRange, keyword, category]);
+  }, [
+    searchParams,
+    sort,
+    brands,
+    types,
+    typeSkin,
+    priceRange,
+    keyword,
+    category,
+  ]);
 
   // Update URL when sort changes
   const handleSortChange = (value: string) => {
@@ -163,8 +174,6 @@ export default function ProductsPage() {
 
       {/* Main content */}
       <section className={styles["product-list"]}>
-        
-
         <h2 className={styles["section-title"]}>Tất cả sản phẩm</h2>
 
         {/* Sort buttons */}
@@ -188,7 +197,7 @@ export default function ProductsPage() {
             </button>
           ))}
         </div>
-          {/* Filter icon only on mobile */}
+        {/* Filter icon only on mobile */}
         <button
           className={styles["mobile-filter-btn"]}
           onClick={() => setIsMobileFilterOpen(true)}

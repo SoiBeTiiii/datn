@@ -257,10 +257,10 @@ export default function Header() {
 
           {/* Icon List (Contact, Blog, etc.) */}
           <div className={styles.iconList}>
-            <div className={styles.iconItem}>
+            {/* <div className={styles.iconItem}>
               <MdStore size={20} />
               <span>Liên hệ</span>
-            </div>
+            </div> */}
             <Link href="/blog" className={styles.iconLink}>
               <div className={styles.iconItem}>
                 <MdEdit size={20} />

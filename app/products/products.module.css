@@ -149,7 +149,7 @@
 /* ===== PRODUCT PAGE ===== */
 .product-page {
   display: flex;
-  max-width: 1200px;
+  max-width: 1340px;
   margin: 180px auto;
   box-sizing: border-box;
 }
@@ -217,6 +217,7 @@
 /* ===== PRODUCT LIST ===== */
 .product-list {
   flex: 1;
+  width: 100%;
 }
 .section-title {
   font-size: 20px;
@@ -269,7 +270,7 @@
 /* ===== PRODUCT GRID ===== */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 10px;
 }
 .product-card {

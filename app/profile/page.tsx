@@ -5,10 +5,13 @@ import { useEffect, useState } from "react";
 import styles from "./Profile.module.css";
 import { updateUserInfo, userInfo } from "../../lib/authApi";
 import { useUserContext } from "../context/UserContext";
+import { useRouter } from "next/navigation"; // ✅ thêm router
+import { MdArrowBack } from "react-icons/md"; // ✅ icon back (react-icons)
 
 export default function ProfilePage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
-  const { avatar } = useUserContext(); // lấy file avatar đã chọn từ layout
+  const { avatar } = useUserContext(); 
+  const router = useRouter();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -45,6 +48,22 @@ export default function ProfilePage() {
 
   return (
     <>
+      {/* ✅ Nút quay về (chỉ hiện ở mobile) */}
+      <button
+        className={styles.backBtnPC}
+        onClick={() => router.push("/")}
+        aria-label="Quay về trang chủ"
+      >
+        <MdArrowBack size={24} />
+      </button>
+      <button
+        className={styles.backBtn}
+        onClick={() => router.push("/")}
+        aria-label="Quay về trang chủ"
+      >
+        <MdArrowBack size={24} />
+      </button>
+
       <h2 className={styles.title}>Tài khoản</h2>
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.grid}>

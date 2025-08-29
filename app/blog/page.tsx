@@ -9,13 +9,15 @@ import { fetchBlogCategories } from '@/lib/categoryApi';
 import Category from '@/app/interface/Category';
 import BlogProps from '../interface/blog';
 import Link from 'next/link';
+import { MdArrowBack } from 'react-icons/md';
+import { useRouter } from 'next/navigation';
 
 export default function BlogPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [blogs, setBlogs] = useState<BlogProps[]>([]);
   const [latestBlogs, setLatestBlogs] = useState<BlogProps[]>([]);
-
+  const router = useRouter();
   // 🔹 Load danh mục bài viết (type = blog)
   useEffect(() => {
     async function loadCategories() {
@@ -46,8 +48,21 @@ export default function BlogPage() {
 
   return (
     <div className={styles.container}>
-      <nav className={styles.breadcrumb}>Trang chủ &gt; Chuyên mục làm đẹp</nav>
-      <h1 className={styles.title}>Chuyên mục làm đẹp</h1>
+  <button
+        className={styles.backBtnPC}
+        onClick={() => router.push("/")}
+        aria-label="Quay về trang chủ"
+      >
+        <MdArrowBack size={24} />
+      </button>
+      <button
+        className={styles.backBtn}
+        onClick={() => router.push("/")}
+        aria-label="Quay về trang chủ"
+      >
+        <MdArrowBack size={24} />
+      </button>   
+         <h1 className={styles.title}>Chuyên mục làm đẹp</h1>
 
       {/* 🔸 Phần featured blog ở đầu trang */}
       {latestBlogs.map((blog: BlogProps, index: number) => (

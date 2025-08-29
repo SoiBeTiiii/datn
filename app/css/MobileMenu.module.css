@@ -14,7 +14,10 @@
 .menuDrawer.open {
   left: 0;
 }
-
+.menuItema{
+  /* margin-top: 5px; */
+  line-height: 2;
+}
 .overlay {
   position: fixed;
   top: 0;

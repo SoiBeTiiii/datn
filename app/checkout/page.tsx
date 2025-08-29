@@ -18,6 +18,7 @@ import { Voucher } from "../interface/voucher";
 import { userInfo } from "@/lib/authApi";
 import { shippingApi } from "@/lib/shippingApi";
 import { ShippingMethod } from "@/lib/shippingApi";
+import { MdArrowBack } from "react-icons/md";
 export default function CheckoutPage() {
   const { cart } = useCart();
   const router = useRouter();
@@ -306,6 +307,20 @@ export default function CheckoutPage() {
 
   return (
     <div className={styles.checkoutContainer}>
+          <button
+        className={styles.backBtnPC}
+        onClick={() => router.push("/")}
+        aria-label="Quay về trang chủ"
+      >
+        <MdArrowBack size={24} />
+      </button>
+      <button
+        className={styles.backBtn}
+        onClick={() => router.push("/")}
+        aria-label="Quay về trang chủ"
+      >
+        <MdArrowBack size={24} />
+      </button> 
       <h1>Thông tin thanh toán</h1>
       <div className={styles.grid}>
         {/* LEFT */}

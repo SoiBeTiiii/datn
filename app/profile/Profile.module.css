@@ -22,6 +22,46 @@
   flex-direction: column;
   align-items: center;
 }
+/* Nút back */
+.backBtn {
+  position: absolute;
+  top: 180px;
+  left: 25px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  display: none; /* mặc định ẩn */
+  z-index: 998;
+}
+.backBtnPC {
+  position: absolute;
+  top: 200px;
+  left: 40px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  /* display: none; mặc định ẩn */
+  z-index: 998;
+  transition: 0.3s ease-in;
+  /* transform: scale(1); */
+  height: auto;
+}
+.backBtnPC:hover{
+  background-color: blue;
+  color: white;
+  border-radius: 100%;
+  height: 25px;
+  transition: 0.3s ease;
+}
+/* Hiện khi ở mobile */
+@media (max-width: 768px) {
+  .backBtn {
+    display: block;
+  }
+}
+
 
 .card {
   text-align: center;

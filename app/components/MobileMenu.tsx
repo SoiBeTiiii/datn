@@ -9,6 +9,7 @@ import fetchBrands from "../../lib/brandApi";
 import Category from "../../app/interface/Category";
 import BrandProps from "@/app/interface/brand";
 import { useAuth } from "../context/AuthContext"; // 👈 dùng lại context như Header
+import { useRouter } from "next/navigation";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -21,7 +22,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<BrandProps[]>([]);
   const [loading, setLoading] = useState(false);
-
+  const router = useRouter();
   const toggle = (menu: string) => {
     setOpenMenu(openMenu === menu ? null : menu);
   };
@@ -153,7 +154,9 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             )}
 
             {/* Mục tĩnh */}
-         
+           <Link href="/blog" className={styles.menuItema} >
+              Bài viết
+            </Link>
           </>
         )}
       </div>

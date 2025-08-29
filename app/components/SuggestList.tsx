@@ -28,6 +28,8 @@ export default function ProductListSlider() {
   return (
     <div className={styles.wrapper}>
       <div className={styles.sliderContainer}>
+              <h2 className={styles.title}>Sản phẩm bạn có thể thích</h2>
+        
         <div
           className={styles.sliderTrack}
           style={{

@@ -1,0 +1,53 @@
+.container {
+  padding: 20px;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-top: 180px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.title span {
+  color: #f55fa3;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat( 5, 1fr);
+  
+}
+@media (max-width: 1200px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Màn hình từ 992px trở xuống: 3 cột */
+@media (max-width: 992px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Màn hình từ 768px trở xuống: 2 cột */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Màn hình nhỏ hơn 480px: 1 cột */
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .title {
+    font-size: 18px;
+    text-align: center;
+  }
+}

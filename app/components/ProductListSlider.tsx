@@ -5,11 +5,13 @@ import styles from "../css/ProductListSlider.module.css";
 import ButtonFromIntro from "../css/IntroSlider.module.css";
 import { fetchProducts } from "../../lib/productApi";
 import ProductCardProps from "../interface/ProductCardProps";
+import { useRouter } from "next/navigation";
 
 export default function ProductListSlider() {
   const [products, setProducts] = useState<ProductCardProps[]>([]);
   const [page, setPage] = useState(0);
   const ITEMS_PER_PAGE = 4;
+  const router = useRouter();
 
   useEffect(() => {
     fetchProducts()
@@ -96,7 +98,9 @@ export default function ProductListSlider() {
         <button className={styles.arrow} onClick={prev}>
           ◀
         </button>
-        <button className={ButtonFromIntro.button}>Xem thêm</button>
+        <button className={ButtonFromIntro.button}
+        onClick={() => router.push("/featured")}
+        >Xem thêm</button>
         <button className={styles.arrow} onClick={next}>
           ▶
         </button>

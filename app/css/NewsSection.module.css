@@ -3,6 +3,7 @@
   padding: 48px 16px;
   max-width: 1300px;
   margin: 0 auto;
+  /* padding: 0px; */
 }
 
 .title {
@@ -53,7 +54,7 @@
 @media screen and (max-width: 430px) {
   .section{
     padding: 24px 0px;
-    /* margin-right: 100px; */
+    /* padding-right:20px;   */
   }
   .Newgrid {
     margin-left: 50px;

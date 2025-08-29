@@ -25,6 +25,35 @@
   display: none; /* mặc định ẩn trên PC */
   z-index: 997;
 }
+.error {
+  color: #ef4444;
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 4px 0 8px;
+}
+.invalid {
+  border-color: #ef4444 !important;
+  background: #fff7f7;
+}
+
+.field {
+  width: 100%;
+}
+.field .input,
+.field .select {
+  width: 100%;
+}
+
+.voucherOk {
+  color: #059669;
+  font-size: 13px;
+  margin-top: 6px;
+}
+.voucherErr {
+  color: #ef4444;
+  font-size: 13px;
+  margin-top: 6px;
+}
 
 .backBtnPC {
   position: absolute;
@@ -132,7 +161,7 @@
   border-radius: 20px;
   padding: 24px 28px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 15px;
   color: #1f2937;
   display: flex;
@@ -184,7 +213,6 @@
   box-shadow: 0 6px 14px rgba(233, 30, 99, 0.5);
 }
 
-
 /* Voucher section */
 .voucher {
   margin-top: 2rem;
@@ -207,8 +235,8 @@
 }
 
 .voucherItem {
-  flex: 1 1 auto;          
-  max-width: 330px;         /* giới hạn chiều ngang */
+  flex: 1 1 auto;
+  max-width: 330px; /* giới hạn chiều ngang */
   padding: 0.5rem 0.75rem;
   font-size: 12px;
   border: 1px solid #1976d2;
@@ -252,10 +280,6 @@
   background-color: #303f9f;
 }
 
-/* Lỗi */
-.error {
-  border: 1px solid red !important;
-}
 
 /* Hiển thị tùy chọn biến thể sản phẩm */
 .variantOption {
@@ -274,10 +298,10 @@
   .grid {
     flex-direction: column;
   }
-  .backBtnPC{
+  .backBtnPC {
     display: none;
   }
-  .backBtn{
+  .backBtn {
     display: block;
   }
 

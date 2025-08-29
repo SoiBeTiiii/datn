@@ -97,7 +97,10 @@ export default function ProductCard({
     const load = async () => {
       if (!userKey) return;
 
-      if (wishlistCache.loadedFor === userKey && wishlistCache.list.length > 0) {
+      if (
+        wishlistCache.loadedFor === userKey &&
+        wishlistCache.list.length > 0
+      ) {
         return; // đã có cache hợp lệ
       }
 
@@ -109,10 +112,13 @@ export default function ProductCard({
 
       wishlistCache.loading = (async () => {
         const resp = await getWishlists();
-        const items: any[] =
-          Array.isArray((resp as any)?.data) ? (resp as any).data :
-          Array.isArray((resp as any)?.data?.data) ? (resp as any).data.data :
-          Array.isArray(resp) ? (resp as any) : [];
+        const items: any[] = Array.isArray((resp as any)?.data)
+          ? (resp as any).data
+          : Array.isArray((resp as any)?.data?.data)
+          ? (resp as any).data.data
+          : Array.isArray(resp)
+          ? (resp as any)
+          : [];
         wishlistCache.list = items;
         rebuildSetFromList();
         wishlistCache.loadedFor = userKey;
@@ -124,7 +130,9 @@ export default function ProductCard({
       if (!cancelled) setIsWished(hasInCache(slug, id));
     };
 
-    load().catch(() => { /* ignore */ });
+    load().catch(() => {
+      /* ignore */
+    });
 
     return () => {
       cancelled = true;
@@ -135,7 +143,8 @@ export default function ProductCard({
   useEffect(() => {
     const handler = () => setIsWished(hasInCache(slug, id));
     window.addEventListener(WISHLIST_EVENT, handler as EventListener);
-    return () => window.removeEventListener(WISHLIST_EVENT, handler as EventListener);
+    return () =>
+      window.removeEventListener(WISHLIST_EVENT, handler as EventListener);
   }, [slug, id]);
 
   const handleAddToCart = () => {
@@ -219,12 +228,16 @@ export default function ProductCard({
         </Link>
 
         <p className={styles.brand}>{brand}</p>
-        <h3 className={styles.name}>{name}</h3>
+        <Link href={`/products/${slug}`}>
+          <h3 className={styles.name}>{name}</h3>
+        </Link>
 
         <p className={styles.price}>
           {formatPrice(price)}{" "}
           {originalPrice && originalPrice > (price ?? 0) && (
-            <span className={styles.original}>{formatPrice(originalPrice)}</span>
+            <span className={styles.original}>
+              {formatPrice(originalPrice)}
+            </span>
           )}
         </p>
 
@@ -254,13 +267,19 @@ export default function ProductCard({
           </button> */}
 
           <button
-            className={`${styles.wishlist} ${isWished ? styles.wishlistActive : ""}`}
+            className={`${styles.wishlist} ${
+              isWished ? styles.wishlistActive : ""
+            }`}
             onClick={handleToggleWishlist}
             aria-label={isWished ? "Bỏ khỏi wishlist" : "Thêm vào wishlist"}
             disabled={checkingWish || isMutating || !seeded}
             title={isWished ? "Bỏ khỏi yêu thích" : "Thêm vào yêu thích"}
           >
-            {isWished ? <FaHeart size={20} color="red" /> : <FaRegHeart size={20} />}
+            {isWished ? (
+              <FaHeart size={20} color="red" />
+            ) : (
+              <FaRegHeart size={20} />
+            )}
           </button>
         </div>
       </section>
@@ -272,10 +291,7 @@ export default function ProductCard({
             className={styles.overlay}
             onClick={() => setLoginModalOpen(false)}
           >
-            <div
-              className={styles.modal}
-              onClick={(e) => e.stopPropagation()}
-            >
+            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
               <button
                 className={styles.closeBtn}
                 onClick={() => setLoginModalOpen(false)}

@@ -97,14 +97,14 @@ export default function CartPage() {
             </div>
           </div>
 
-          <label className={styles.checkbox}>
+          {/* <label className={styles.checkbox}>
             <input
               type="checkbox"
               checked={invoice}
               onChange={(e) => setInvoice(e.target.checked)}
             />
             Thông tin xuất hoá đơn
-          </label>
+          </label> */}
 
           <button className={styles.checkout} onClick={handleCheckout}>
             THANH TOÁN NGAY

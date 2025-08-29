@@ -1,3 +1,4 @@
+// components/CartDrawer.tsx (hoặc vị trí bạn đang dùng)
 "use client";
 
 import styles from "../css/CartDrawer.module.css";
@@ -5,16 +6,27 @@ import { MdClose, MdDelete } from "react-icons/md";
 import { useCart } from "../context/CartConText";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const { cart, increaseQuantity, decreaseQuantity, removeFromCart } =
-    useCart();
+  const { cart, increaseQuantity, decreaseQuantity, removeFromCart } = useCart();
   const router = useRouter();
+
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  // ✅ Disable dựa vào context (realtime)
+  const checkoutDisabled = cart.length === 0;
+
+  const handleCheckout = () => {
+    if (checkoutDisabled) return;
+    // đóng drawer nếu bạn muốn
+    // onClose();
+    router.push("/checkout");
+  };
 
   return (
     <div className={`${styles.overlay} ${isOpen ? styles.open : ""}`}>
@@ -22,24 +34,26 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       <div className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ""}`}>
         <div className={styles.header}>
           <h3>Giỏ hàng</h3>
-          <button onClick={onClose} className={styles.closeBtn}>
+          <button onClick={onClose} className={styles.closeBtn} aria-label="Đóng giỏ hàng">
             <MdClose size={24} />
           </button>
         </div>
 
         <div className={styles.content}>
+          {cart.length === 0 && (
+            <p className={styles.empty}>Giỏ hàng của bạn đang trống.</p>
+          )}
+
           {cart.map((item) => (
             <div
-              key={`${item.productId}-${item.variantId}-${Object.values(
-                item.options
-              ).join("-")}`}
+              key={`${item.productId}-${item.variantId}-${Object.values(item.options).join("-")}`}
               className={styles.item}
             >
-              <img src={item.image} alt={item.name} />
+              <img src={item.image} alt={item.name} className={styles.thumb} />
               <div style={{ flex: 1 }}>
                 <p className={styles.name}>{item.name}</p>
 
-                {/* ✅ Hiển thị các tùy chọn đã chọn */}
+                {/* Tùy chọn đã chọn */}
                 <div className={styles.options}>
                   {Object.entries(item.options).map(([key, opt]) => (
                     <div key={key} className={styles.optionItem}>
@@ -51,18 +65,16 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                 <div className={styles.qty}>
                   <button
-                    onClick={() =>
-                      decreaseQuantity(item.variantId, item.options)
-                    }
+                    onClick={() => decreaseQuantity(item.variantId, item.options)}
                     disabled={item.quantity <= 1}
+                    aria-label="Giảm số lượng"
                   >
                     -
                   </button>
                   <span>{item.quantity}</span>
                   <button
-                    onClick={() =>
-                      increaseQuantity(item.variantId, item.options)
-                    }
+                    onClick={() => increaseQuantity(item.variantId, item.options)}
+                    aria-label="Tăng số lượng"
                   >
                     +
                   </button>
@@ -77,6 +89,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 onClick={() => removeFromCart(item.variantId, item.options)}
                 className={styles.deleteBtn}
                 title="Xóa sản phẩm"
+                aria-label="Xóa sản phẩm khỏi giỏ"
               >
                 <MdDelete size={20} />
               </button>
@@ -89,7 +102,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             <span>TỔNG TIỀN:</span>
             <strong>{total.toLocaleString()}₫</strong>
           </div>
-          {cart.length === 0 && (
+
+          {checkoutDisabled && (
             <p className={styles.warning}>
               Giỏ hàng của bạn chưa đạt mức tối thiểu để thanh toán.
             </p>
@@ -97,17 +111,17 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
           <button
             className={styles.checkoutBtn}
-            onClick={() => router.push("/checkout")}
-            disabled={cart.length === 0}
+            onClick={handleCheckout}
+            disabled={checkoutDisabled}
+            aria-disabled={checkoutDisabled}
+            title={checkoutDisabled ? "Giỏ hàng trống" : "Tiến hành thanh toán"}
           >
-            THANH TOÁN 
+            THANH TOÁN
           </button>
-          {/* <a className={styles.checkoutBtn} href="/checkout">
-            Thanh Toán
-          </a> */}
-          <a className={styles.viewCart} href="/cart">
+
+          <Link className={styles.viewCart} href="/cart" onClick={onClose}>
             Xem giỏ hàng
-          </a>
+          </Link>
         </div>
       </div>
     </div>

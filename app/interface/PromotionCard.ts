@@ -13,4 +13,5 @@ export default interface ProductCardProps {
   promotionName?: string; 
   conditions?: any;
    promotionLabel?: string;
+   brand: string
 }

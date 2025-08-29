@@ -16,6 +16,9 @@ type FilterParams = {
   price_range?: string[];
   keyword?: string;
   category?: string;
+  is_featured?: 0 | 1;
+  has_promotion?: 0 | 1;
+
 
 };
 
@@ -32,8 +35,10 @@ export const fetchProducts = async (
   if (filters.brand?.length) searchParams.append('brand', filters.brand.join(','));
   if (filters.type_skin?.length) searchParams.append('type_skin', filters.type_skin.join(','));
   if (filters.price_range?.length) searchParams.append('price_range', filters.price_range.join(','));
-    if (filters.category) searchParams.append('category', filters.category); // ✅ Thêm vào đây
-
+  if (filters.category) searchParams.append('category', filters.category); // ✅ Thêm vào đây
+  if (typeof filters.is_featured !== "undefined") {
+    searchParams.append("is_featured", String(filters.is_featured));
+  }
 
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
   const res = await baseAxios.get(`${baseUrl}/products?${searchParams.toString()}`);
@@ -63,7 +68,7 @@ export const fetchProducts = async (
       price,
       originalPrice,
       discount,
-      type_skin:  item.type_skin,
+      type_skin: item.type_skin,
       sold: item.sold_count,
       average_rating: item.average_rating ?? 0,
       variants: item.variants ?? [],

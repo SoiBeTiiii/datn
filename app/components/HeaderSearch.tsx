@@ -177,8 +177,15 @@ export default function Header() {
           >
             <MdMenu size={24} />
           </div>
+          <Link href="/">
+            <img
+              src="https://res.cloudinary.com/dnj08gvqi/image/upload/v1756454387/xu4dhv120cj7qdfk07dg.png"
+              className={styles.logo}
+              alt=""
+            />
+          </Link>
 
-          <div className={styles.logo}>EGOMall</div>
+          {/* <div className={styles.logo}>EGOMall</div> */}
           {/* === Nhóm icon Wishlist + Giỏ hàng mobile === */}
           <div className={styles.mobileIcons}>
             {/* Wishlist */}

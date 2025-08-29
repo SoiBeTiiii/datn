@@ -34,6 +34,7 @@ export default function PromotionCard({
   originalPrice,
   image,
   sold,
+  brand,
   average_rating = 0,
   discount,
   final_price_discount,
@@ -152,7 +153,7 @@ export default function PromotionCard({
           {promotionLabel && <div className={styles.promoTag}>{promotionLabel}</div>}
 
           <img src={image} alt={name} className={styles.image} />
-          <p className={styles.brand}>WHOO</p>
+          <p className={styles.brand}>{brand}</p>
 
           <h3 className={styles.name}>{name}</h3>
 

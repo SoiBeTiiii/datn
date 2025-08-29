@@ -16,6 +16,32 @@
   max-width: 900px;
   width: 100%;
 }
+/* Register.module.css (bổ sung) */
+.error {
+  color: #ef4444;
+  font-size: 12px;
+}
+.invalid {
+  border-color: #ef4444 !important;
+  background: #fff7f7;
+}
+.input {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  width: 100%;
+  background: #fff;
+}
+.input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 .leftPanel {
   background: linear-gradient(to bottom right, #f48fb1, #f06292);

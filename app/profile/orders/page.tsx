@@ -214,9 +214,6 @@ export default function OrdersPage() {
                               value={paymentMethod}
                               onChange={(e) => setPaymentMethod(e.target.value)}
                             >
-                              <option className={styles.option} value="MOMO">
-                                MOMO
-                              </option>
                               <option className={styles.option} value="VNPAY">
                                 VNPAY
                               </option>
@@ -224,6 +221,9 @@ export default function OrdersPage() {
                                 COD
                               </option>
                             </select>
+                            <span style={{ color: "red" }}>
+                              Lưu ý! khi thanh đổi phương thức thanh toán COD đơn hàng sẽ không thể thay đổi được nữa.{" "}
+                            </span>
                             <button
                               className={styles.confirmButton}
                               onClick={() =>

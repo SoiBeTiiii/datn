@@ -94,6 +94,7 @@ export default function ProductListSlider() {
               endDate: matchingPromo?.endDate,
               promotionLabel,
               variants,
+              brand: product.brand ?? "", // Add brand property with fallback
             };
           }
         );
@@ -178,6 +179,7 @@ export default function ProductListSlider() {
                         average_rating={p.average_rating}
                         promotionName={p.promotionName}
                         endDate={p.endDate}
+                        brand={p.brand}
                       />
                     ))}
                   </div>

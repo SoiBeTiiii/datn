@@ -16,6 +16,9 @@
   max-width: 900px;
   width: 100%;
 }
+.btn:hover{
+  color:#145dbf
+}
 
 .leftPanel {
   background: linear-gradient(to bottom right, #f48fb1, #f06292);
@@ -55,6 +58,58 @@
   font-size: 28px;
   color: #f06292;
   margin-bottom: 12px;
+}
+
+/* ===== Validation text (đỏ, nhỏ) ===== */
+.error {
+  color: #ef4444;        /* đỏ */
+  font-size: 12px;       /* nhỏ */
+  /* line-height: 1.4; */
+}
+
+/* Tuỳ chọn: message thành công (nếu dùng) */
+.success {
+  color: #10b981;        /* xanh lá */
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* ===== Input trạng thái ===== */
+.input {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  width: 100%;
+  background: #fff;
+  transition: box-shadow .15s ease, border-color .15s ease, background .15s ease;
+}
+
+.input::placeholder {
+  color: #9ca3af;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #2563eb;             /* xanh focus */
+  box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+}
+
+/* Khi invalid: viền đỏ + nền rất nhạt để dễ nhìn */
+.invalid,
+.input.invalid {
+  border-color: #ef4444 !important;
+  background: #fff7f7;
+}
+
+.input.invalid:focus {
+  box-shadow: 0 0 0 3px rgba(239,68,68,.18);
+}
+
+/* Nút khi disable do form lỗi/đang submit */
+.button[disabled] {
+  opacity: .6;
+  cursor: not-allowed;
 }
 
 .input {

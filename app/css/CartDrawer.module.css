@@ -19,6 +19,7 @@
 }
 
 
+.checkoutBtn[disabled] { opacity: .6; cursor: not-allowed; }
 
 .open .backdrop {
   background-color: rgba(0, 0, 0, 0.4);

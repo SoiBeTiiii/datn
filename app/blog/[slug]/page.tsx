@@ -7,6 +7,7 @@ import Category from '../../interface/Category';
 import BlogDetailProps from '@/app/interface/blogDetail';
 import BlogCard from '@/app/components/BlogCard';
 import ProductCard from '@/app/components/ProductCard';
+import BackToHomeButton from '@/app/components/BackToHomeButton';
 
 export default function BlogDetailPage() {
   const params = useParams();
@@ -43,6 +44,7 @@ export default function BlogDetailPage() {
   return (
     <div className={styles.container}>
       {/* Tiêu đề */}
+      <BackToHomeButton />
       <h1 className={styles.title}>{blog.title}</h1>
 
       {/* Thông tin meta */}

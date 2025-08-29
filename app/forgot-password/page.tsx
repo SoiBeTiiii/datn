@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import styles from "./ForgotPassword.module.css";
 import { requestResetOTP, verifyResetOTP, resetPassword } from "../../lib/authApi";
 import { useRouter } from "next/navigation";
+import BackToHomeButton from "../components/BackToHomeButton";
 
 type Notice = { type: "success" | "error" | "info"; text: string } | null;
 
@@ -134,11 +135,11 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className={styles.container}>
+      <BackToHomeButton />
       <div className={styles.card}>
         <div className={styles.left}>
           <h1>Khôi phục mật khẩu 🔐</h1>
           <p>Chúng tôi sẽ giúp bạn lấy lại quyền truy cập nhanh chóng.</p>
-          <img src="/images/reset-password.svg" alt="Reset Password" />
         </div>
 
         <form className={styles.form} noValidate onSubmit={handleSubmit}>

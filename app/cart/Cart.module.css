@@ -15,6 +15,16 @@
   padding: 20px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
+.checkout[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cartEmptyNote {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #b91c1c; /* đỏ cảnh báo */
+}
 
 .titlebox {
   margin-top: 16px;
@@ -94,7 +104,7 @@
   resize: none;
   color: #333;
   margin-top: 8px;
-  font-family: inherit;
+  font-family: 'Roboto', sans-serif;
 }
 
 .checkbox {

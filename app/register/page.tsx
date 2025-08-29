@@ -6,6 +6,7 @@ import styles from "./Register.module.css";
 import Link from "next/link";
 import { register } from "../../lib/authApi";
 import { useRouter } from "next/navigation";
+import BackToHomeButton from "../components/BackToHomeButton";
 
 /* ---------- Validators & helpers ---------- */
 function validateEmail(v: string) {
@@ -122,12 +123,12 @@ export default function RegisterPage() {
 
   return (
     <div className={styles.container}>
+      <BackToHomeButton />
       <div className={styles.card}>
         <div className={styles.leftPanel}>
           <h1>Tạo tài khoản mới ✨</h1>
           <p>Gia nhập cộng đồng yêu làm đẹp và nhận ưu đãi độc quyền!</p>
           <img src="/images/register-illustration.svg" alt="Register" />
-          <Link className={styles.btn} href="/">Về trang chủ</Link>
         </div>
 
         <form noValidate onSubmit={handleRegister} className={styles.form}>

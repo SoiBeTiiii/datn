@@ -11,7 +11,7 @@ import BlogProps from '../interface/blog';
 import Link from 'next/link';
 import { MdArrowBack } from 'react-icons/md';
 import { useRouter } from 'next/navigation';
-
+import BackToHomeButton from '../components/BackToHomeButton';
 export default function BlogPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -48,21 +48,8 @@ export default function BlogPage() {
 
   return (
     <div className={styles.container}>
-  <button
-        className={styles.backBtnPC}
-        onClick={() => router.push("/")}
-        aria-label="Quay về trang chủ"
-      >
-        <MdArrowBack size={24} />
-      </button>
-      <button
-        className={styles.backBtn}
-        onClick={() => router.push("/")}
-        aria-label="Quay về trang chủ"
-      >
-        <MdArrowBack size={24} />
-      </button>   
-         <h1 className={styles.title}>Chuyên mục làm đẹp</h1>
+      <BackToHomeButton />
+      <h1 className={styles.title}>Chuyên mục làm đẹp</h1>
 
       {/* 🔸 Phần featured blog ở đầu trang */}
       {latestBlogs.map((blog: BlogProps, index: number) => (

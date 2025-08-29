@@ -2,7 +2,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  font-family: Arial, sans-serif;
+  font-family: 'Roboto', sans-serif;
   color: #333;
 }
 
@@ -13,11 +13,19 @@
   color: #1a202c;
   text-align: center;
 }
+.imageInput {
+  display: none;
+}
 .fieldRow {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 10px 0;
+  display: inline-block;
+  padding: 8px 16px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  background-color: #fafafa;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
 }
 .updateReviewButton {
   margin-top: 8px;

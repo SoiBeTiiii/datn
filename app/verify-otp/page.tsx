@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import styles from "./VerifyOtp.module.css";
 import { useRouter } from "next/navigation";
 import authAxios from "../../lib/authAxios";
+import BackToHomeButton from "../components/BackToHomeButton";
 
 type Notice = { type: "success" | "error" | "info"; text: string } | null;
 
@@ -65,6 +66,7 @@ export default function VerifyOtpPage() {
 
   return (
     <div className={styles.container}>
+      <BackToHomeButton />
       <div className={styles.card}>
         <h2>Xác minh OTP</h2>
 

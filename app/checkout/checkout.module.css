@@ -3,7 +3,7 @@
   margin: 200px auto;
   /* padding-top: 300px; */
   max-width: 1200px;
-  font-family: "Inter", sans-serif;
+  font-family: 'Roboto', sans-serif;
   background-color: #fff;
   margin-bottom: 50px;
   padding: 0 20px;
@@ -161,7 +161,7 @@
   border-radius: 20px;
   padding: 24px 28px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-  font-family: "Inter", sans-serif;
+  font-family: 'Roboto', sans-serif;
   font-size: 15px;
   color: #1f2937;
   display: flex;

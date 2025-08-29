@@ -4,6 +4,7 @@ import { fetchPromotedProducts } from "@/lib/productApi";
 import ProductCardProps from "@/app/interface/ProductCardProps";
 import styles from "./promotionPage.module.css"
 import ProductCard from "../components/ProductCard";
+import BackToHomeButton from "../components/BackToHomeButton";
 
 export default function PromotionList() {
   const [products, setProducts] = useState<ProductCardProps[]>([]);
@@ -14,6 +15,7 @@ export default function PromotionList() {
 
   return (
     <div className={styles.container}>
+      <BackToHomeButton />
       <h2 className={styles.title}>
         Sản phẩm khuyến mãi
       </h2>

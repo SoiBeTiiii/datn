@@ -14,6 +14,7 @@
   min-width: 320px;
 }
 
+
 .main-image {
   width: 100%;
   max-width: 450px;
@@ -379,7 +380,7 @@
 
 @media (max-width: 479px) {
   .product-container{
-    margin-top: 100px;
+    margin-top: 130px;
   }
   .slide {
     flex: 0 0 100%;

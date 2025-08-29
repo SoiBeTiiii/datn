@@ -22,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head></head>
-      <body>z
+      <body>
         <AuthProvider>
           <CartProvider>
             <Chatbot />

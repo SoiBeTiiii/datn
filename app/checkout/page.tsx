@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./checkout.module.css";
 import {
   getAddresses,
@@ -12,13 +12,13 @@ import Address from "../interface/address";
 import { useCart } from "../context/CartConText";
 import { checkoutOrder } from "@/lib/orderApi";
 import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getVouchers } from "@/lib/voucherApi";
 import { Voucher } from "../interface/voucher";
 import { userInfo } from "@/lib/authApi";
 import { shippingApi } from "@/lib/shippingApi";
 import { MdArrowBack } from "react-icons/md";
-
+import BackToHomeButton from "../components/BackToHomeButton";
 /* ============ Utils ============ */
 const fmtVND = (n: number) =>
   new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(n || 0);
@@ -34,16 +34,35 @@ const validateVNPhone = (v: string) => {
   const s = v.trim();
   if (!s) return "Vui lòng nhập số điện thoại.";
   const rx = /^(?:\+?84|0)(?:3|5|7|8|9)\d{8}$/;
-  return rx.test(s.replace(/\s/g, "")) ? "" : "Số điện thoại không hợp lệ (VN).";
+  return rx.test(s.replace(/\s/g, ""))
+    ? ""
+    : "Số điện thoại không hợp lệ (VN).";
 };
 
 const nonEmpty = (label: string, v: string) =>
   v.trim() ? "" : `Vui lòng nhập ${label}.`;
 
+/** Kiểu item khi Buy Now */
+type BuyNowItem = {
+  productId: number | string;
+  variantId: number | string;
+  name: string;
+  image: string;
+  quantity: number;
+  price: number; // đơn giá đã chọn (final)
+  options: Record<string, { name: string; value: string }>;
+  brand?: string;
+  sku?: string;
+};
+
 /* ============ Component ============ */
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, clearCart } = useCart(); // ✅ chỉ gọi useCart() 1 lần
+  const params = useSearchParams();
+  const isBuyNow = params.get("source") === "buynow";
+
+  const { cart, clearCart } = useCart(); // ✅ chỉ gọi 1 lần
+  const [buyNowItems, setBuyNowItems] = useState<BuyNowItem[]>([]);
 
   const [voucherList, setVoucherList] = useState<Voucher[]>([]);
   const [voucherCode, setVoucherCode] = useState("");
@@ -70,7 +89,8 @@ export default function CheckoutPage() {
   );
   const [note, setNote] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("COD");
-
+  const [authChecked, setAuthChecked] = useState(false);
+  const loginToastIdRef = useRef<string | number | null>(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [form, setForm] = useState({
@@ -109,20 +129,39 @@ export default function CheckoutPage() {
 
   /* ============ Auth check ============ */
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const userData = await userInfo();
-        setUser(userData);
-      } catch (err) {
-        router.push("/login");
-      } finally {
-        setLoading(false);
-      }
-    };
-    checkAuth();
-  }, [router]);
+  let mounted = true;
 
-  /* ============ Load data ============ */
+  const checkAuth = async () => {
+    try {
+      const userData = await userInfo();
+      if (!mounted) return;
+      setUser(userData);
+    } catch (err) {
+      // 👉 chỉ bắn toast 1 lần
+      if (!loginToastIdRef.current || !toast.isActive(loginToastIdRef.current)) {
+        loginToastIdRef.current = toast.error("⚠️ Bạn cần đăng nhập để tiếp tục!", {
+          toastId: "need-login",
+        });
+      }
+      // 👉 replace để tránh quay lại trang checkout rồi lặp lại
+      setTimeout(() => {
+        router.replace("/login");
+      }, 1200);
+    } finally {
+      if (mounted) {
+        setLoading(false);
+        setAuthChecked(true); // ✅ báo hiệu đã check xong
+      }
+    }
+  };
+
+  checkAuth();
+  return () => {
+    mounted = false;
+  };
+}, [router]);
+
+  /* ============ Load data tĩnh ============ */
   useEffect(() => {
     getProvinces().then(setProvinces);
   }, []);
@@ -133,6 +172,23 @@ export default function CheckoutPage() {
       .catch(() => setVoucherMessage("Không thể tải voucher."));
   }, []);
 
+  /* ============ Buy Now: lấy từ sessionStorage ============ */
+  useEffect(() => {
+    if (!isBuyNow) return;
+    try {
+      const raw = sessionStorage.getItem("checkout:buynow");
+      if (raw) {
+        const parsed = JSON.parse(raw) as BuyNowItem[];
+        setBuyNowItems(Array.isArray(parsed) ? parsed : []);
+      } else {
+        setBuyNowItems([]);
+      }
+    } catch {
+      setBuyNowItems([]);
+    }
+  }, [isBuyNow]);
+
+  /* ============ Load địa phương ============ */
   useEffect(() => {
     if (form.province_code) {
       getDistricts(form.province_code).then(setDistricts);
@@ -186,7 +242,7 @@ export default function CheckoutPage() {
     }
   }, [selectedAddressId, addresses]);
 
-  // khi chọn code thủ công -> fill tên tương ứng (để payload shipping_address có tên)
+  // khi chọn code thủ công -> fill tên tương ứng
   useEffect(() => {
     const p = provinces.find((x) => x.code === form.province_code);
     const d = districts.find((x) => x.code === form.district_code);
@@ -198,7 +254,14 @@ export default function CheckoutPage() {
       ward_name: w?.name || prev.ward_name,
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.province_code, form.district_code, form.ward_code, provinces, districts, wards]);
+  }, [
+    form.province_code,
+    form.district_code,
+    form.ward_code,
+    provinces,
+    districts,
+    wards,
+  ]);
 
   // load shipping methods theo tỉnh
   useEffect(() => {
@@ -215,16 +278,30 @@ export default function CheckoutPage() {
     load();
   }, [form.province_code]);
 
+  /* ============ Items nguồn: BuyNow hay Cart ============ */
+  const items = isBuyNow
+    ? buyNowItems.map((it) => ({
+        variantId: it.variantId,
+        name: it.name,
+        price: it.price,
+        quantity: it.quantity,
+        isGift: false,
+        promotion: null,
+        sale_price: it.price,
+        originalPrice: it.price,
+      }))
+    : cart;
+
   /* ============ Tính tiền ============ */
   const subtotal = useMemo(
-    () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    [cart]
+    () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [items]
   );
   const originalTotal = subtotal;
 
   const discount = useMemo(
     () =>
-      cart.reduce((sum, item) => {
+      items.reduce((sum, item) => {
         const price = item.price;
         const quantity = item.quantity;
         if (item.promotion) {
@@ -236,7 +313,7 @@ export default function CheckoutPage() {
         }
         return sum;
       }, 0),
-    [cart]
+    [items]
   );
 
   const selectedShippingFee =
@@ -267,7 +344,6 @@ export default function CheckoutPage() {
       district_code: nonEmpty("quận/huyện", form.district_code),
       ward_code: nonEmpty("phường/xã", form.ward_code),
       address_detail: nonEmpty("địa chỉ cụ thể", form.address_detail),
-      // note: không bắt buộc
     };
   }, [form]);
 
@@ -330,8 +406,12 @@ export default function CheckoutPage() {
       address_detail: true,
     });
 
-    if (cart.length === 0) {
-      toast.error("Giỏ hàng trống.");
+    if (items.length === 0) {
+      toast.error(
+        isBuyNow
+          ? "Không có sản phẩm Buy Now để thanh toán."
+          : "Giỏ hàng trống."
+      );
       return;
     }
     if (formInvalid) {
@@ -344,11 +424,31 @@ export default function CheckoutPage() {
     }
 
     try {
-      const hasGifts = cart.some((item) => item.isGift);
+      const hasGifts = items.some((item) => (item as any).isGift);
+
+      // products cho payload
+      const productsPayload = items
+        .filter((item) => !(item as any).isGift)
+        .map((item) => ({
+          id: (item as any).variantId,
+          quantity: item.quantity,
+          price: (item as any).originalPrice ?? item.price, // giá gốc
+          sale_price: (item as any).sale_price ?? item.price, // giá bán (đã giảm)
+        }));
+
+      const giftsPayload = hasGifts
+        ? items
+            .filter((item) => (item as any).isGift)
+            .map((gift) => ({
+              id: (gift as any).variantId,
+              quantity: gift.quantity,
+            }))
+        : undefined;
+
       const payload = {
         total_price: subtotal,
         total_discount: discount + voucherDiscount,
-        note, // không bắt buộc
+        note,
         shipping_name: `${form.first_name} ${form.last_name}`,
         shipping_phone: form.phone,
         province_code: form.province_code,
@@ -359,22 +459,8 @@ export default function CheckoutPage() {
         shipping_method_id: selectedShippingMethodId,
         orders: [
           {
-            products: cart
-              .filter((item) => !item.isGift)
-              .map((item) => ({
-                id: item.variantId,
-                quantity: item.quantity,
-                price: item.originalPrice,
-                sale_price: item.sale_price || item.originalPrice,
-              })),
-            ...(hasGifts && {
-              gifts: cart
-                .filter((item) => item.isGift)
-                .map((gift) => ({
-                  id: gift.variantId,
-                  quantity: gift.quantity,
-                })),
-            }),
+            products: productsPayload,
+            ...(giftsPayload && { gifts: giftsPayload }),
           },
         ],
       };
@@ -386,7 +472,7 @@ export default function CheckoutPage() {
       if (paymentMethod === "MOMO" || paymentMethod === "VNPAY") {
         const redirectUrl = res?.data?.redirect_url;
         if (redirectUrl) {
-          clearCart();
+          if (!isBuyNow) clearCart(); // BuyNow không xoá giỏ
           toast.success("✅ Đang chuyển hướng đến cổng thanh toán...");
           window.location.href = redirectUrl;
           return;
@@ -397,7 +483,7 @@ export default function CheckoutPage() {
       }
 
       // COD
-      clearCart();
+      if (!isBuyNow) clearCart();
       toast.success("✅ Đặt hàng thành công!");
       router.replace("/thank-you");
     } catch (error) {
@@ -408,22 +494,11 @@ export default function CheckoutPage() {
 
   if (loading) return null;
 
+  const hasItems = items.length > 0;
+
   return (
     <div className={styles.checkoutContainer}>
-      <button
-        className={styles.backBtnPC}
-        onClick={() => router.push("/")}
-        aria-label="Quay về trang chủ"
-      >
-        <MdArrowBack size={24} />
-      </button>
-      <button
-        className={styles.backBtn}
-        onClick={() => router.push("/")}
-        aria-label="Quay về trang chủ"
-      >
-        <MdArrowBack size={24} />
-      </button>
+      <BackToHomeButton />
 
       <h1>Thông tin thanh toán</h1>
 
@@ -437,16 +512,16 @@ export default function CheckoutPage() {
               <div className={styles.field}>
                 <input
                   className={`${styles.input} ${
-                    touched.first_name && errors.first_name ? styles.invalid : ""
+                    touched.first_name && errors.first_name
+                      ? styles.invalid
+                      : ""
                   }`}
                   placeholder="Tên"
                   value={form.first_name}
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, first_name: e.target.value }))
                   }
-                  onBlur={() =>
-                    setTouched((t) => ({ ...t, first_name: true }))
-                  }
+                  onBlur={() => setTouched((t) => ({ ...t, first_name: true }))}
                   aria-invalid={!!(touched.first_name && errors.first_name)}
                   aria-describedby="err-first-name"
                 />
@@ -567,7 +642,9 @@ export default function CheckoutPage() {
                   onBlur={() =>
                     setTouched((t) => ({ ...t, province_code: true }))
                   }
-                  aria-invalid={!!(touched.province_code && errors.province_code)}
+                  aria-invalid={
+                    !!(touched.province_code && errors.province_code)
+                  }
                   aria-describedby="err-province"
                 >
                   <option value="">Tỉnh/Thành phố</option>
@@ -603,7 +680,9 @@ export default function CheckoutPage() {
                     setTouched((t) => ({ ...t, district_code: true }))
                   }
                   disabled={!form.province_code}
-                  aria-invalid={!!(touched.district_code && errors.district_code)}
+                  aria-invalid={
+                    !!(touched.district_code && errors.district_code)
+                  }
                   aria-describedby="err-district"
                 >
                   <option value="">Quận/Huyện</option>
@@ -667,11 +746,17 @@ export default function CheckoutPage() {
                 onBlur={() =>
                   setTouched((t) => ({ ...t, address_detail: true }))
                 }
-                aria-invalid={!!(touched.address_detail && errors.address_detail)}
+                aria-invalid={
+                  !!(touched.address_detail && errors.address_detail)
+                }
                 aria-describedby="err-address-detail"
               />
               {touched.address_detail && errors.address_detail && (
-                <p id="err-address-detail" className={styles.error} role="alert">
+                <p
+                  id="err-address-detail"
+                  className={styles.error}
+                  role="alert"
+                >
                   {errors.address_detail}
                 </p>
               )}
@@ -682,7 +767,9 @@ export default function CheckoutPage() {
           <section className={styles.section}>
             <h2>Phương thức vận chuyển</h2>
             {shippingMethods.length === 0 ? (
-              <p>Vui lòng chọn Tỉnh/Thành phố để hiển thị phương thức vận chuyển.</p>
+              <p>
+                Vui lòng chọn Tỉnh/Thành phố để hiển thị phương thức vận chuyển.
+              </p>
             ) : (
               <div className={styles.radioGroup}>
                 {shippingMethods.map((method) => (
@@ -695,7 +782,8 @@ export default function CheckoutPage() {
                       onChange={() => setSelectedShippingMethodId(method.id)}
                     />
                     <span>
-                      {method.name} - {fmtVND(method.fee)}₫ ({method.estimated_time})
+                      {method.name} - {fmtVND(method.fee)}₫ (
+                      {method.estimated_time})
                     </span>
                   </label>
                 ))}
@@ -737,18 +825,23 @@ export default function CheckoutPage() {
         {/* RIGHT */}
         <div className={styles.right}>
           <div className={styles.summaryBox}>
-            {cart.length === 0 ? (
-              <p>Bạn chưa có sản phẩm nào trong giỏ hàng</p>
+            {!hasItems ? (
+              <p>
+                {isBuyNow
+                  ? "Không có sản phẩm Buy Now"
+                  : "Bạn chưa có sản phẩm nào trong giỏ hàng"}
+              </p>
             ) : (
               <>
-                {cart.map((item, index) => (
-                  <p key={`${item.productId}-${item.variantId}-${index}`}>
-                    {item.name} - {fmtVND(item.price)}₫
+                {items.map((item, index) => (
+                  <p key={`${(item as any).variantId}-${index}`}>
+                    {item.name} - {fmtVND(item.price)}₫ x {item.quantity}
                   </p>
                 ))}
                 <hr />
                 <p>
-                  Tổng giá trị đơn hàng: <strong>{fmtVND(originalTotal)}₫</strong>
+                  Tổng giá trị đơn hàng:{" "}
+                  <strong>{fmtVND(originalTotal)}₫</strong>
                 </p>
                 {voucherDiscount > 0 && (
                   <p>
@@ -757,7 +850,8 @@ export default function CheckoutPage() {
                 )}
                 {selectedShippingFee > 0 && (
                   <p>
-                    Phí vận chuyển: <strong>{fmtVND(selectedShippingFee)}₫</strong>
+                    Phí vận chuyển:{" "}
+                    <strong>{fmtVND(selectedShippingFee)}₫</strong>
                   </p>
                 )}
                 <p>
@@ -767,7 +861,7 @@ export default function CheckoutPage() {
                   className={styles.placeOrderBtn}
                   onClick={handlePlaceOrder}
                   disabled={
-                    cart.length === 0 || formInvalid || !selectedShippingMethodId
+                    !hasItems || formInvalid || !selectedShippingMethodId
                   }
                   title={
                     !selectedShippingMethodId

@@ -1,8 +1,9 @@
 "use client";
+
+import React, { useEffect, useRef, useState } from "react";
 import styles from "./productDetail.module.css";
 import ProductCard from "../../components/ProductCard";
-import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   fetchProductBySlug,
   fetchReviewsByProductSlug,
@@ -11,8 +12,39 @@ import { ProductDetail, Review } from "@/app/interface/ProductDetail";
 import CountdownTimer from "../../components/CountDown";
 import { useCart } from "../../context/CartConText";
 import { toast } from "react-toastify";
+import { MdArrowBack } from "react-icons/md";
+import BackToHomeButton from "../../components/BackToHomeButton";
+/**
+ * Gắn mảng options [{name, value}] cho từng variant dựa trên option_value_ids
+ */
+function buildVariantOptions(product: ProductDetail) {
+  if (!product?.variants || !product?.options) return;
+
+  const idToLabelMap: Record<string | number, string> = {};
+
+  // Map value_id -> value_label
+  product.options.forEach((opt) => {
+    opt.value_ids.forEach((id: string | number, idx: number) => {
+      idToLabelMap[id] = opt.value_labels[idx];
+    });
+  });
+
+  // Gắn mảng options cho từng variant
+  product.variants.forEach((variant: any) => {
+    variant.options = variant.option_value_ids.map((id: string | number) => {
+      const option = product.options.find((opt) => opt.value_ids.includes(id));
+      return {
+        name: option?.name || "Không rõ",
+        value: idToLabelMap[id] || String(id),
+      };
+    });
+  });
+}
+
 export default function ProductDetailPage() {
   const { slug } = useParams();
+  const router = useRouter();
+
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
@@ -22,10 +54,16 @@ export default function ProductDetailPage() {
   }>({});
   const { addToCart } = useCart();
   const [reviews, setReviews] = useState<Review[]>([]);
+
+  // Slider liên quan
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const totalSlides = Math.ceil((product?.related?.length || 0) / itemsPerPage);
 
+  // Ref để cuộn tới khu vực chọn phân loại
+  const optionsRef = useRef<HTMLDivElement | null>(null);
+
+  // Responsive items per page
   useEffect(() => {
     const updateItemsPerPage = () => {
       if (window.innerWidth >= 1400) setItemsPerPage(5);
@@ -34,65 +72,19 @@ export default function ProductDetailPage() {
       else if (window.innerWidth >= 480) setItemsPerPage(2);
       else setItemsPerPage(1);
     };
-
     updateItemsPerPage();
     window.addEventListener("resize", updateItemsPerPage);
-
     return () => window.removeEventListener("resize", updateItemsPerPage);
   }, []);
 
   const handleNext = () => {
-    if (currentIndex < totalSlides - 1) {
-      setCurrentIndex((prev) => prev + 1);
-    }
+    if (currentIndex < totalSlides - 1) setCurrentIndex((prev) => prev + 1);
   };
-
   const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex((prev) => prev - 1);
-    }
+    if (currentIndex > 0) setCurrentIndex((prev) => prev - 1);
   };
 
-  // Build maps from option values
-  const buildVariantOptions = (product: ProductDetail) => {
-    const idToLabelMap: Record<string | number, string> = {};
-
-    product.options.forEach((opt) => {
-      opt.value_ids.forEach((id, idx) => {
-        idToLabelMap[id] = opt.value_labels[idx];
-      });
-    });
-
-    product.variants.forEach((variant) => {
-      variant.options = variant.option_value_ids.map((id) => {
-        const option = product.options.find((opt) =>
-          opt.value_ids.includes(id)
-        );
-        return {
-          name: option?.name || "Không rõ",
-          value: idToLabelMap[id] || id.toString(),
-        };
-      });
-    });
-  };
-
-  const normalizeVariants = (
-    product: ProductDetail,
-    valueIdToLabel: Record<string | number, string>,
-    valueIdToOptionName: Record<string | number, string>
-  ) => {
-    if (!product.variants) return [];
-
-    return product.variants.map((variant) => {
-      const options = variant.option_value_ids.map((valueId) => ({
-        name: valueIdToOptionName[valueId],
-        value: valueIdToLabel[valueId],
-      }));
-
-      return { ...variant, options };
-    });
-  };
-
+  // Fetch dữ liệu
   useEffect(() => {
     let isMounted = true;
 
@@ -108,8 +100,15 @@ export default function ProductDetailPage() {
             setSelectedOptions({});
             setSelectedVariant(null);
             setSelectedImage(res.image);
+
+            // Auto chọn nếu chỉ có 1 variant
+            if (res.variants?.length === 1) {
+              setSelectedVariant(res.variants[0]);
+              if (res.variants[0].image)
+                setSelectedImage(res.variants[0].image);
+            }
           }
-          setReviews(reviewsResponse);
+          setReviews(reviewsResponse || []);
         }
       } catch (error) {
         console.error("Lỗi khi fetch sản phẩm:", error);
@@ -117,12 +116,12 @@ export default function ProductDetailPage() {
     };
 
     fetchData();
-
     return () => {
       isMounted = false;
     };
   }, [slug]);
 
+  // Chọn option
   const handleOptionSelect = (name: string, value: string) => {
     const newOptions = { ...selectedOptions, [name]: value };
     setSelectedOptions(newOptions);
@@ -130,11 +129,65 @@ export default function ProductDetailPage() {
     const matched = product?.variants.find(
       (variant) =>
         Array.isArray(variant.options) &&
-        variant.options.every((opt) => newOptions[opt.name] === opt.value)
+        variant.options.every((opt: any) => newOptions[opt.name] === opt.value)
     );
 
     setSelectedVariant(matched || null);
     if (matched?.image) setSelectedImage(matched.image);
+  };
+
+  // Mua ngay: validate -> lưu sessionStorage -> chuyển /checkout
+  const handleBuyNow = () => {
+    if (!product) return;
+
+    if (!selectedVariant) {
+      toast.error("Vui lòng chọn phân loại trước khi Mua ngay!");
+      optionsRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      return;
+    }
+
+    if (selectedVariant.quantity <= 0) {
+      toast.error("Biến thể đã hết hàng.");
+      return;
+    }
+    if (quantity > selectedVariant.quantity) {
+      toast.error(
+        `Chỉ còn ${selectedVariant.quantity} sản phẩm cho biến thể này.`
+      );
+      return;
+    }
+
+    const unitPrice =
+      selectedVariant.final_price_discount ??
+      selectedVariant.sale_price ??
+      selectedVariant.price ??
+      0;
+
+    const checkoutItem = {
+      productId: product.id,
+      variantId: selectedVariant.id,
+      name: product.name,
+      image: (selectedVariant.image || product.image) as string,
+      quantity,
+      price: unitPrice,
+      options: (selectedVariant.options || []).reduce((acc: any, opt: any) => {
+        acc[opt.name] = { name: opt.name, value: opt.value };
+        return acc;
+      }, {}),
+      brand: product.brand,
+      sku: selectedVariant.sku ?? "",
+    };
+
+    try {
+      sessionStorage.setItem("checkout:buynow", JSON.stringify([checkoutItem]));
+      router.push("/checkout?source=buynow");
+    } catch (e) {
+      console.error(e);
+      toast.error("Không thể khởi tạo đơn hàng. Vui lòng thử lại!");
+    }
   };
 
   if (!product) return <p>Đang tải sản phẩm...</p>;
@@ -148,6 +201,8 @@ export default function ProductDetailPage() {
   return (
     <>
       <main className={styles["product-container"]}>
+        {/* Gallery */} {/* Back to Home (fixed) */}
+        <BackToHomeButton />
         <section className={styles["product-gallery"]}>
           <figure>
             <img
@@ -155,7 +210,6 @@ export default function ProductDetailPage() {
               className={styles["main-image"]}
               alt={product.name}
             />
-
             <figcaption className={styles["thumbnails"]}>
               <img
                 src={product.image}
@@ -163,8 +217,7 @@ export default function ProductDetailPage() {
                 className={styles["thumbnail"]}
                 onClick={() => setSelectedImage(product.image)}
               />
-
-              {product.variants.map((v, idx) =>
+              {product.variants?.map((v: any, idx: number) =>
                 v.image ? (
                   <img
                     key={idx}
@@ -178,7 +231,7 @@ export default function ProductDetailPage() {
             </figcaption>
           </figure>
         </section>
-
+        {/* Info */}
         <section className={styles["product-info"]}>
           <header>
             <div className={styles["brand"]}>{product.brand}</div>
@@ -201,53 +254,61 @@ export default function ProductDetailPage() {
           </header>
 
           {/* Option Selector */}
-          {product.options.map((option) => (
-            <div key={option.id} className={styles["option-group"]}>
-              <label className={styles["option-label"]}>{option.name}:</label>
-              <div className={styles["option-values"]}>
-                {option.value_ids.map((valueId, idx) => {
-                  const valueLabel = option.value_labels[idx];
-                  const isSelected =
-                    selectedOptions[option.name] === valueLabel;
-
-                  return (
-                    <button
-                      key={valueId}
-                      className={`${styles["option-button"]} ${
-                        isSelected ? styles["selected"] : ""
-                      }`}
-                      onClick={() =>
-                        handleOptionSelect(option.name, valueLabel)
-                      }
-                    >
-                      <span>{valueLabel}</span>
-                    </button>
-                  );
-                })}
+          <div ref={optionsRef}>
+            {product.options?.map((option) => (
+              <div key={option.id} className={styles["option-group"]}>
+                <label className={styles["option-label"]}>{option.name}:</label>
+                <div className={styles["option-values"]}>
+                  {option.value_ids.map((valueId, idx) => {
+                    const valueLabel = option.value_labels[idx];
+                    const isSelected =
+                      selectedOptions[option.name] === valueLabel;
+                    return (
+                      <button
+                        key={valueId}
+                        className={`${styles["option-button"]} ${
+                          isSelected ? styles["selected"] : ""
+                        }`}
+                        onClick={() =>
+                          handleOptionSelect(option.name, valueLabel)
+                        }
+                      >
+                        <span>{valueLabel}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
 
+          {/* Price */}
           <div className={styles["price"]}>
             {selectedVariant ? (
               <>
                 <strong>{price.toLocaleString()}₫</strong>
-                <span className={styles["old-price"]}>
-                  {selectedVariant.price.toLocaleString()}₫
-                </span>
-                <span className={styles["discount"]}>
-                  -{Math.round(100 - (price * 100) / selectedVariant.price)}%
-                </span>
-                <div className={styles["save"]}>
-                  (Tiết kiệm: {(selectedVariant.price - price).toLocaleString()}
-                  ₫)
-                </div>
+                {selectedVariant.price && selectedVariant.price > price && (
+                  <>
+                    <span className={styles["old-price"]}>
+                      {selectedVariant.price.toLocaleString()}₫
+                    </span>
+                    <span className={styles["discount"]}>
+                      -{Math.round(100 - (price * 100) / selectedVariant.price)}
+                      %
+                    </span>
+                    <div className={styles["save"]}>
+                      (Tiết kiệm:{" "}
+                      {(selectedVariant.price - price).toLocaleString()}₫)
+                    </div>
+                  </>
+                )}
               </>
             ) : (
               <strong>Vui lòng chọn phân loại</strong>
             )}
           </div>
 
+          {/* Countdown */}
           {(selectedVariant?.promotion?.endDate ||
             product?.promotion?.endDate) && (
             <div className={styles["countdown-wrapper"]}>
@@ -263,6 +324,7 @@ export default function ProductDetailPage() {
             </div>
           )}
 
+          {/* Quantity */}
           <div className={styles["quantity"]}>
             <label htmlFor="quantity-input">Số lượng:</label>
             <button
@@ -277,7 +339,7 @@ export default function ProductDetailPage() {
               value={quantity}
               readOnly
               max={selectedVariant?.quantity}
-            />{" "}
+            />
             <button
               aria-label="Tăng số lượng"
               onClick={() =>
@@ -295,23 +357,32 @@ export default function ProductDetailPage() {
             </button>
           </div>
 
+          {/* Actions */}
           <div className={styles["actions"]}>
-            <button className={styles["buy-now"]}>Mua ngay</button>
+            <button className={styles["buy-now"]} onClick={handleBuyNow}>
+              Mua ngay
+            </button>
+
             <button
               className={styles["add-cart"]}
               disabled={!selectedVariant}
               onClick={() => {
                 if (!selectedVariant) return;
+                const unitPrice =
+                  selectedVariant.final_price_discount ??
+                  selectedVariant.sale_price ??
+                  selectedVariant.price ??
+                  0;
 
                 addToCart({
                   productId: product.id,
                   id: product.id,
                   name: product.name,
                   image: product.image,
-                  price: price,
+                  price: unitPrice,
                   variantId: selectedVariant.id,
                   quantity: quantity,
-                  options: selectedVariant.options.reduce(
+                  options: (selectedVariant.options || []).reduce(
                     (acc: any, opt: any) => {
                       acc[opt.name] = { name: opt.name, value: opt.value };
                       return acc;
@@ -338,6 +409,7 @@ export default function ProductDetailPage() {
               Thêm vào giỏ
             </button>
           </div>
+
           <ul className={styles["features"]}>
             <li>🚚 Giao hàng toàn quốc</li>
             <li>🎁 Tích điểm tất cả sản phẩm</li>
@@ -347,6 +419,7 @@ export default function ProductDetailPage() {
         </section>
       </main>
 
+      {/* Thông tin sản phẩm */}
       <section className={styles["product-details"]}>
         <h2 className={styles["tab-title"]}>Thông tin sản phẩm</h2>
         <article className={styles["tab-content"]}>
@@ -355,9 +428,9 @@ export default function ProductDetailPage() {
         </article>
       </section>
 
+      {/* Đánh giá */}
       <section className={styles["review-section"]}>
         <h2>Đánh giá sản phẩm</h2>
-
         {reviews.length === 0 ? (
           <p>Chưa có đánh giá nào cho sản phẩm này.</p>
         ) : (
@@ -422,13 +495,13 @@ export default function ProductDetailPage() {
         )}
       </section>
 
+      {/* Sản phẩm liên quan */}
       <section className={styles["related-products"]}>
         <h2>Sản phẩm liên quan</h2>
-
         <div className={styles["slider-container"]}>
           <button
             className={styles["prev-btn"]}
-            onClick={() => handlePrev()}
+            onClick={handlePrev}
             disabled={currentIndex === 0}
           >
             &#10094;
@@ -460,7 +533,9 @@ export default function ProductDetailPage() {
                     average_rating={rel.average_rating}
                     variants={[]}
                     type={undefined}
-                    type_skin={""} is_featured={false}                  />
+                    type_skin={""}
+                    is_featured={false}
+                  />
                 </div>
               ))}
             </div>
@@ -468,7 +543,7 @@ export default function ProductDetailPage() {
 
           <button
             className={styles["next-btn"]}
-            onClick={() => handleNext()}
+            onClick={handleNext}
             disabled={currentIndex >= totalSlides - 1}
           >
             &#10095;

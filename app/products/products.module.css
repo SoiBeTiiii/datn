@@ -14,7 +14,7 @@
   justify-content: center;
   margin-top: 40px;
   gap: 8px;
-  font-family: "Roboto", sans-serif;
+  font-family: 'Roboto', sans-serif;
 }
 .page-btn {
   padding: 6px 12px;
@@ -161,7 +161,7 @@
   background-color: #fff;
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  font-family: "Segoe UI", sans-serif;
+  font-family: 'Roboto', sans-serif;
   flex-shrink: 0;
 }
 .filter-section {

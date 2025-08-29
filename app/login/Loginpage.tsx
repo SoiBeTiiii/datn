@@ -9,6 +9,7 @@ import { login, userInfo } from "../../lib/authApi";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import authAxios from "../../lib/authAxios";
+import BackToHomeButton from "../components/BackToHomeButton";
 
 function validateEmail(v: string) {
   const val = v.trim().toLowerCase();
@@ -98,13 +99,12 @@ export default function LoginPage() {
   };
   return (
     <div className={styles.container}>
+      <BackToHomeButton />
       <div className={styles.card}>
         <div className={styles.leftPanel}>
           <h1>Chào mừng trở lại 👋</h1>
           <p>Khám phá các sản phẩm làm đẹp mới nhất từ EGOMall!</p>
-          <Link className={styles.btn} href="/">
-            Quay về trang chủ
-          </Link>
+         
         </div>
 
         <form noValidate onSubmit={handleLogin} className={styles.form}>

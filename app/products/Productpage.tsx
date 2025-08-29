@@ -8,6 +8,7 @@ import ProductCardProps from "../interface/ProductCardProps";
 import { useSearchParams, useRouter } from "next/navigation";
 import fetchBrands from "../../lib/brandApi";
 import BrandProps from "../interface/brand";
+import BackToHomeButton from "../components/BackToHomeButton";
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
@@ -131,8 +132,10 @@ export default function ProductsPage() {
   const isFeaturedActive = urlIsFeatured || sort === "is_featured";
 
   return (
+    
     <section className={styles["product-page"]}>
       {/* Sidebar filter for desktop */}
+      <BackToHomeButton />
       <aside className={styles["filter-sidebar"]}>
         <div className={styles["filter-section"]}>
           <h2 className={styles["filter-title"]}>Thương hiệu</h2>

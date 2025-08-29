@@ -4,6 +4,7 @@ import { fetchFeaturedProducts } from "@/lib/productApi";
 import ProductCardProps from "@/app/interface/ProductCardProps";
 import styles from "./featuredPage.module.css"
 import ProductCard from "../components/ProductCard";
+import BackToHomeButton from "../components/BackToHomeButton";
 
 export default function FeaturedList() {
   const [products, setProducts] = useState<ProductCardProps[]>([]);
@@ -14,6 +15,7 @@ export default function FeaturedList() {
 
   return (
     <div className={styles.container}>
+      <BackToHomeButton />
       <h2 className={styles.title}>
         Sản phẩm nổi bật
       </h2>

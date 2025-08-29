@@ -6,6 +6,7 @@ import baseAxios from "../../lib/baseAxios";
 import ProductCard from "../components/ProductCard";
 import ProductCardProps from "../interface/ProductCardProps";
 import styles from "./SearchPage.module.css";
+import BackToHomeButton from "../components/BackToHomeButton";
 
 export default function SearchPage() {
   const [results, setResults] = useState<ProductCardProps[]>([]);
@@ -30,6 +31,7 @@ export default function SearchPage() {
 
   return (
     <div className={styles.container}>
+      <BackToHomeButton />
       <h2 className={styles.title}>
         Có {results.length} kết quả cho: <span>{keyword}</span>
       </h2>

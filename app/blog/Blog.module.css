@@ -2,7 +2,7 @@
 .container {
   padding: 24px;
   background: #fff;
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Roboto', sans-serif;
   padding-top: 180px;
 }
 
@@ -102,39 +102,6 @@
   cursor: pointer;
 }
 
-/* Nút back */
-.backBtn {
-  position: absolute;
-  top: 180px;
-  left: 25px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: #333;
-  display: none; /* mặc định ẩn trên PC */
-  z-index: 997;
-}
-
-.backBtnPC {
-  position: absolute;
-  top: 180px;
-  left: 25px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: #333;
-  z-index: 998;
-  transition: 0.3s ease-in;
-  height: auto;
-}
-
-.backBtnPC:hover {
-  background-color: #1e40af; /* xanh đậm */
-  color: #fff;
-  border-radius: 100%;
-  height: 25px;
-  transition: 0.3s ease;
-}
 
 /* --------- Breakpoints --------- */
 
@@ -201,9 +168,7 @@
   .title {
     font-size: 20px;
   }
-  .backBtnPC{
-    display: none;
-  }
+ 
   .featuredTitle {
     font-size: 18px;
   }

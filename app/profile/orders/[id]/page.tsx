@@ -288,6 +288,7 @@ export default function OrderDetailPage() {
                           name="images"
                           accept="image/*"
                           multiple
+                          className={styles.imageInput}
                           onChange={(e) => handleSelectImages(item.order_detail_id, e.target.files)}
                         />
                       </label>

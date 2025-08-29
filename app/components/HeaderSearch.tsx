@@ -18,6 +18,8 @@ import MobileMenu from "./MobileMenu";
 import { useCart } from "../context/CartConText";
 import { useAuth } from "../context/AuthContext";
 import searchProducts from "../../lib/searchApi";
+import { useRef } from "react";
+
 import {
   addToWishlist,
   getWishlists,
@@ -28,6 +30,8 @@ import Category from "../../app/interface/Category";
 import styles from "../css/HeaderSearch.module.css";
 
 export default function Header() {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const { user, logout } = useAuth();
   const router = useRouter();
   const [keyword, setKeyword] = useState("");
@@ -247,7 +251,9 @@ export default function Header() {
                     onClick={() => {
                       router.push(`/products/${item.slug}`);
                       setShowResults(false);
-                      setKeyword("");
+                      setKeyword(""); // clear text
+                      setResults([]); // clear gợi ý
+                      inputRef.current?.blur(); // ❗ bỏ focus để dropdown không bật lại
                     }}
                   >
                     <img
@@ -288,7 +294,7 @@ export default function Header() {
                 </Link>
                 <div className={styles.dropdownContent}>
                   <button onClick={logout} className={styles.logoutButton}>
-                   <span className={styles.logoutText}>Đăng xuất</span>
+                    <span className={styles.logoutText}>Đăng xuất</span>
                   </button>
                 </div>
               </div>
@@ -330,6 +336,7 @@ export default function Header() {
                 e.preventDefault();
                 router.push(`/search?search=${encodeURIComponent(keyword)}`);
                 setShowResults(false);
+                setKeyword(""); // ✅ clear input sau khi search
               }}
             >
               <input

@@ -4,7 +4,7 @@ import { refreshToken as apiRefresh } from "./authApi";
 type DecodedJWT = { exp?: number };
 
 const TOKEN_KEY = "authToken";
-const CLOCK_SKEW_MS = 45_000; // refresh sớm 45s
+const CLOCK_SKEW_MS = 345_000; // refresh sớm 45s
 
 class TokenRefresher {
   private timerId: number | null = null;

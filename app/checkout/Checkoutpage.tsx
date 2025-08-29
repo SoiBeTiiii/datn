@@ -74,6 +74,7 @@ export default function CheckoutPage() {
     discount_value: number;
     max_discount: number;
     conditions: number;
+    is_voucher_valiable: boolean;
   } | null>(null);
 
   const [provinces, setProvinces] = useState<{ code: string; name: string }[]>(
@@ -129,37 +130,43 @@ export default function CheckoutPage() {
 
   /* ============ Auth check ============ */
   useEffect(() => {
-  let mounted = true;
+    let mounted = true;
 
-  const checkAuth = async () => {
-    try {
-      const userData = await userInfo();
-      if (!mounted) return;
-      setUser(userData);
-    } catch (err) {
-      // 👉 chỉ bắn toast 1 lần
-      if (!loginToastIdRef.current || !toast.isActive(loginToastIdRef.current)) {
-        loginToastIdRef.current = toast.error("⚠️ Bạn cần đăng nhập để tiếp tục!", {
-          toastId: "need-login",
-        });
+    const checkAuth = async () => {
+      try {
+        const userData = await userInfo();
+        if (!mounted) return;
+        setUser(userData);
+      } catch (err) {
+        // 👉 chỉ bắn toast 1 lần
+        if (
+          !loginToastIdRef.current ||
+          !toast.isActive(loginToastIdRef.current)
+        ) {
+          loginToastIdRef.current = toast.error(
+            "⚠️ Bạn cần đăng nhập để tiếp tục!",
+            {
+              toastId: "need-login",
+            }
+          );
+        }
+        // 👉 replace để tránh quay lại trang checkout rồi lặp lại
+        setTimeout(() => {
+          router.replace("/login");
+        }, 1200);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+          setAuthChecked(true); // ✅ báo hiệu đã check xong
+        }
       }
-      // 👉 replace để tránh quay lại trang checkout rồi lặp lại
-      setTimeout(() => {
-        router.replace("/login");
-      }, 1200);
-    } finally {
-      if (mounted) {
-        setLoading(false);
-        setAuthChecked(true); // ✅ báo hiệu đã check xong
-      }
-    }
-  };
+    };
 
-  checkAuth();
-  return () => {
-    mounted = false;
-  };
-}, [router]);
+    checkAuth();
+    return () => {
+      mounted = false;
+    };
+  }, [router]);
 
   /* ============ Load data tĩnh ============ */
   useEffect(() => {
@@ -388,6 +395,7 @@ export default function CheckoutPage() {
       discount_value: matched.discount_value,
       max_discount: matched.max_discount || 0,
       conditions: matched.conditions,
+      is_voucher_valiable: matched.is_voucher_valiable,
     });
     setVoucherMessage("🎉 Áp dụng mã thành công!");
   };
@@ -880,17 +888,21 @@ export default function CheckoutPage() {
           <div className={styles.voucher}>
             <p>Voucher khả dụng:</p>
             <div className={styles.voucherList}>
-              {voucherList.length === 0 && <p>Không có voucher nào.</p>}
-              {voucherList.map((v) => (
-                <button
-                  key={v.id}
-                  className={styles.voucherItem}
-                  onClick={() => setVoucherCode(v.code)}
-                >
-                  <span>{v.description}</span>
-                  <p>Hạn: {v.end_date}</p>
-                </button>
-              ))}
+              {voucherList.filter((v) => v.is_voucher_valiable).length ===
+                0 && <p>Không có voucher nào.</p>}
+
+              {voucherList
+                .filter((v) => v.is_voucher_valiable) // ✅ chỉ giữ voucher khả dụng
+                .map((v) => (
+                  <button
+                    key={v.id}
+                    className={styles.voucherItem}
+                    onClick={() => setVoucherCode(v.code)}
+                  >
+                    <span>{v.description}</span>
+                    <p>Hạn: {v.end_date}</p>
+                  </button>
+                ))}
             </div>
 
             <input

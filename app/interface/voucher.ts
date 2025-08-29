@@ -1,5 +1,6 @@
 // types/voucher.ts
 export interface Voucher {
+  is_voucher_valiable: boolean;
   id: number;
   code: string;
   description: string;

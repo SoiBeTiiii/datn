@@ -60,6 +60,7 @@
   }
 
   .button {
+    width: 55%;
     padding: 10px 20px;
   }
 }

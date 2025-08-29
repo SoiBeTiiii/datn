@@ -1,5 +1,5 @@
 .card {
-  background: white;
+  background: #fff;
   border-radius: 12px;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
   overflow: hidden;
@@ -27,7 +27,7 @@
   top: 8px;
   left: 8px;
   background-color: #f07cb0;
-  color: white;
+  color: #fff;
   padding: 6px 10px;
   font-size: 14px;
   font-weight: bold;
@@ -58,48 +58,7 @@
   line-height: 1.4;
 }
 
-/* === Responsive cho tất cả thiết bị === */
-
-/* iPhone SE - 320px */
-@media (max-width: 360px) {
-  .imageWrapper img {
-    height: 160px;
-  }
-
-  .content h3 {
-    font-size: 0.9rem;
-  }
-
-  .content p {
-    font-size: 0.8rem;
-  }
-
-  .date {
-    font-size: 12px;
-    padding: 5px 8px;
-  }
-
-  .date small {
-    font-size: 9px;
-  }
-}
-
-/* iPhone 13/14 - 390px */
-@media (max-width: 414px) {
-  .imageWrapper img {
-    height: 170px;
-  }
-
-  .content h3 {
-    font-size: 1rem;
-  }
-
-  .content p {
-    font-size: 0.85rem;
-  }
-}
-
-/* iPad Mini - 768px */
+/* === Responsive === */
 @media (max-width: 768px) {
   .card {
     max-width: 100%;
@@ -110,18 +69,54 @@
   }
 
   .content h3 {
-    font-size: 1.05rem;
+    font-size: 0.95rem;
   }
 
   .content p {
-    display: none;
+    font-size: 0.85rem;
+  }
+
+  .date {
+    font-size: 13px;
+    padding: 5px 8px;
+  }
+
+  .date small {
+    font-size: 9px;
   }
 }
 
-/* iPad Pro - 1024px */
-@media (max-width: 1024px) {
+@media (max-width: 414px) {
+  .imageWrapper img {
+    height: 170px;
+  }
+
+  .content h3 {
+    font-size: 0.9rem;
+  }
+
+  .content p {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .imageWrapper img {
+    height: 160px;
+  }
+
+  .content h3 {
+    font-size: 0.85rem;
+  }
+
+  .content p {
+    font-size: 0.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
   .card {
-    max-width: 90%;
+    max-width: 300px;
   }
 
   .imageWrapper img {
@@ -129,21 +124,24 @@
   }
 }
 
-/* Laptop nhỏ - 1280px */
-@media (max-width: 1280px) {
-  .card {
-    max-width: 300px;
-  }
-}
-
-/* Laptop lớn - 1440px trở lên */
 @media (min-width: 1440px) {
   .card {
     max-width: 320px;
   }
+
+  .imageWrapper img {
+    height: 200px;
+  }
+
+  .content h3 {
+    font-size: 1.05rem;
+  }
+
+  .content p {
+    font-size: 0.95rem;
+  }
 }
 
-/* Desktop lớn - 1920px trở lên */
 @media (min-width: 1920px) {
   .card {
     max-width: 340px;

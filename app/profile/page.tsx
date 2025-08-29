@@ -48,22 +48,7 @@ export default function ProfilePage() {
 
   return (
     <>
-      {/* ✅ Nút quay về (chỉ hiện ở mobile) */}
-      <button
-        className={styles.backBtnPC}
-        onClick={() => router.push("/")}
-        aria-label="Quay về trang chủ"
-      >
-        <MdArrowBack size={24} />
-      </button>
-      <button
-        className={styles.backBtn}
-        onClick={() => router.push("/")}
-        aria-label="Quay về trang chủ"
-      >
-        <MdArrowBack size={24} />
-      </button>
-
+    
       <h2 className={styles.title}>Tài khoản</h2>
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.grid}>

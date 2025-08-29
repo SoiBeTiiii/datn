@@ -3,6 +3,9 @@
   padding: 40px 20px;
   font-family: Arial, sans-serif;
   color: #fff;
+  position: sticky;
+  margin-top: auto;
+  bottom: 0; /* quan trọng: đẩy footer xuống đáy viewport */
 }
 
 /* Dùng grid để chia thành 4 ô */

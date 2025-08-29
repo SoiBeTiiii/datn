@@ -116,6 +116,7 @@ export default function OrdersPage() {
 
   return (
     <div className={styles.container}>
+      
       <h1 className={styles.heading}>Lịch sử đơn hàng</h1>
 
       <nav className={styles.nav}>

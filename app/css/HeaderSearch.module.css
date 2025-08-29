@@ -87,6 +87,7 @@
 
 .logo {
   width: 45%;
+  /* margin: 0 0px; */
 }
 
 .searchBox {
@@ -96,7 +97,7 @@
   justify-content: center;
   border-radius: 20px;
   box-shadow: 0 3px 5px rgba(156, 96, 145, 0.5);
-  
+  margin-right:10%;
 }
 
 .searchBox input {

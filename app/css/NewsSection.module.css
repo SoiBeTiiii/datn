@@ -64,6 +64,9 @@
 
 /* Mobile nhỏ - Hiển thị 1 cột */
 @media screen and (max-width: 480px) {
+  .section{
+    margin: 0 auto;
+  }
   .Newgrid {
     margin-left: 50px;
     grid-template-columns: 1fr;

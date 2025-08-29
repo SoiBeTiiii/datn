@@ -75,6 +75,16 @@ export interface OrderDetailResponse {
   shipping_fee: string;
   coupon: string | null;
   products: OrderProduct[];
+  review: {
+    id: number;
+    rating: number;
+    comment: string;
+    is_anonymous: number;
+    images: string[];
+    created_at: string;
+    updated_at: string;
+    can_update: boolean;
+  }
 }
 
 export interface OrderProduct {
@@ -89,6 +99,7 @@ export interface OrderProduct {
   is_gift_text: string | null;
   gift_product: any | null;
   review: ProductReview | null;
+
 }
 
 export interface ProductReview {

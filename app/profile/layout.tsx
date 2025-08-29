@@ -84,6 +84,12 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           >
             Đổi mật khẩu
           </Link>
+          <Link
+            href="/"
+            className={pathname === "/" ? styles.active : ""}
+          >
+            Quay về trang chủ
+          </Link>
         </nav>
       </aside>
       <main className={styles.main}>{children}</main>

@@ -17,8 +17,8 @@ import { getVouchers } from "@/lib/voucherApi";
 import { Voucher } from "../interface/voucher";
 import { userInfo } from "@/lib/authApi";
 import { shippingApi } from "@/lib/shippingApi";
-import { MdArrowBack } from "react-icons/md";
 import BackToHomeButton from "../components/BackToHomeButton";
+
 /* ============ Utils ============ */
 const fmtVND = (n: number) =>
   new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(n || 0);
@@ -34,9 +34,7 @@ const validateVNPhone = (v: string) => {
   const s = v.trim();
   if (!s) return "Vui lòng nhập số điện thoại.";
   const rx = /^(?:\+?84|0)(?:3|5|7|8|9)\d{8}$/;
-  return rx.test(s.replace(/\s/g, ""))
-    ? ""
-    : "Số điện thoại không hợp lệ (VN).";
+  return rx.test(s.replace(/\s/g, "")) ? "" : "Số điện thoại không hợp lệ (VN).";
 };
 
 const nonEmpty = (label: string, v: string) =>
@@ -55,15 +53,19 @@ type BuyNowItem = {
   sku?: string;
 };
 
-/* ============ Component ============ */
 export default function CheckoutPage() {
   const router = useRouter();
   const params = useSearchParams();
   const isBuyNow = params.get("source") === "buynow";
 
-  const { cart, clearCart } = useCart(); // ✅ chỉ gọi 1 lần
-  const [buyNowItems, setBuyNowItems] = useState<BuyNowItem[]>([]);
+  const { cart } = useCart();
 
+  // Auth state
+  const [loadingAuth, setLoadingAuth] = useState(true);
+  const [user, setUser] = useState<any>(null);
+
+  // Data state
+  const [buyNowItems, setBuyNowItems] = useState<BuyNowItem[]>([]);
   const [voucherList, setVoucherList] = useState<Voucher[]>([]);
   const [voucherCode, setVoucherCode] = useState("");
   const [voucherMessage, setVoucherMessage] = useState("");
@@ -90,10 +92,7 @@ export default function CheckoutPage() {
   );
   const [note, setNote] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("COD");
-  const [authChecked, setAuthChecked] = useState(false);
-  const loginToastIdRef = useRef<string | number | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
@@ -127,59 +126,33 @@ export default function CheckoutPage() {
     ward_code: false,
     address_detail: false,
   });
- const toastFiredRef = useRef(false);
-  /* ============ Auth check ============ */
+
+  /* ============ Auth check (DUY NHẤT) ============ */
   useEffect(() => {
-  const token = localStorage.getItem("authToken");
-  if (!token) {
-    toast.error("⚠️ Bạn cần đăng nhập để tiếp tục!");
-    router.push("/login");
-  }
-}, [router]);
-
- useEffect(() => {
     let mounted = true;
-
     (async () => {
       try {
-        const u = await userInfo();        // sẽ throw nếu chưa đăng nhập (đã chỉnh ở authApi)
+        const u = await userInfo(); // sẽ throw nếu chưa đăng nhập
         if (!mounted) return;
         setUser(u);
       } catch {
-        // 👉 bắn toast ở trang này (sẽ hiển thị nếu ToastContainer ở layout gốc)
-        if (!toastFiredRef.current) {
-          toastFiredRef.current = true;
-          toast.error("⚠️ Bạn cần đăng nhập để tiếp tục!");
-        }
-        // 👉 đẩy sang login, kèm next để quay lại sau khi login
-        const next = encodeURIComponent("/checkout");
-        router.replace(`/login?reason=need-login&next=${next}`);
+        // 👉 chỉ push qua login theo yêu cầu
+        router.push("/login");
+        // Nếu muốn quay lại checkout sau khi login, dùng:
+        // const next = encodeURIComponent("/checkout" + window.location.search);
+        // router.push(`/login?next=${next}`);
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted) setLoadingAuth(false);
       }
     })();
-
     return () => {
       mounted = false;
     };
   }, [router]);
 
-  if (loading) return <div className="p-6">Đang kiểm tra đăng nhập…</div>;
-  if (!user) return null; // đã replace sang /login rồi
-
-  /* ============ Load data tĩnh ============ */
-  useEffect(() => {
-    getProvinces().then(setProvinces);
-  }, []);
-
-  useEffect(() => {
-    getVouchers()
-      .then(setVoucherList)
-      .catch(() => setVoucherMessage("Không thể tải voucher."));
-  }, []);
-
   /* ============ Buy Now: lấy từ sessionStorage ============ */
   useEffect(() => {
+    if (!user) return; // chỉ chạy sau khi có user
     if (!isBuyNow) return;
     try {
       const raw = sessionStorage.getItem("checkout:buynow");
@@ -192,28 +165,24 @@ export default function CheckoutPage() {
     } catch {
       setBuyNowItems([]);
     }
-  }, [isBuyNow]);
+  }, [isBuyNow, user]);
 
-  /* ============ Load địa phương ============ */
+  /* ============ Load data tĩnh (sau khi đã có user) ============ */
   useEffect(() => {
-    if (form.province_code) {
-      getDistricts(form.province_code).then(setDistricts);
-    } else {
-      setDistricts([]);
-      setWards([]);
-    }
-  }, [form.province_code]);
+    if (!user) return;
+    getProvinces().then(setProvinces);
+  }, [user]);
 
   useEffect(() => {
-    if (form.district_code) {
-      getWards(form.district_code).then(setWards);
-    } else {
-      setWards([]);
-    }
-  }, [form.district_code]);
+    if (!user) return;
+    getVouchers()
+      .then(setVoucherList)
+      .catch(() => setVoucherMessage("Không thể tải voucher."));
+  }, [user]);
 
   // load addresses + note
   useEffect(() => {
+    if (!user) return;
     const fetchAddress = async () => {
       try {
         const list = await getAddresses();
@@ -226,10 +195,31 @@ export default function CheckoutPage() {
     };
     setNote(localStorage.getItem("checkout_note") || "");
     fetchAddress();
-  }, []);
+  }, [user]);
+
+  /* ============ Load địa phương ============ */
+  useEffect(() => {
+    if (!user) return;
+    if (form.province_code) {
+      getDistricts(form.province_code).then(setDistricts);
+    } else {
+      setDistricts([]);
+      setWards([]);
+    }
+  }, [form.province_code, user]);
+
+  useEffect(() => {
+    if (!user) return;
+    if (form.district_code) {
+      getWards(form.district_code).then(setWards);
+    } else {
+      setWards([]);
+    }
+  }, [form.district_code, user]);
 
   // set form theo address chọn
   useEffect(() => {
+    if (!user) return;
     const selected = addresses.find((addr) => addr.id === selectedAddressId);
     if (selected) {
       setForm({
@@ -246,31 +236,11 @@ export default function CheckoutPage() {
         address_detail: selected.address_detail,
       });
     }
-  }, [selectedAddressId, addresses]);
-
-  // khi chọn code thủ công -> fill tên tương ứng
-  useEffect(() => {
-    const p = provinces.find((x) => x.code === form.province_code);
-    const d = districts.find((x) => x.code === form.district_code);
-    const w = wards.find((x) => x.code === form.ward_code);
-    setForm((prev) => ({
-      ...prev,
-      province_name: p?.name || prev.province_name,
-      district_name: d?.name || prev.district_name,
-      ward_name: w?.name || prev.ward_name,
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    form.province_code,
-    form.district_code,
-    form.ward_code,
-    provinces,
-    districts,
-    wards,
-  ]);
+  }, [selectedAddressId, addresses, user]);
 
   // load shipping methods theo tỉnh
   useEffect(() => {
+    if (!user) return;
     const load = async () => {
       if (!form.province_code) {
         setShippingMethods([]);
@@ -282,7 +252,7 @@ export default function CheckoutPage() {
       if (methods.length > 0) setSelectedShippingMethodId(methods[0].id);
     };
     load();
-  }, [form.province_code]);
+  }, [form.province_code, user]);
 
   /* ============ Items nguồn: BuyNow hay Cart ============ */
   const items = isBuyNow
@@ -310,11 +280,12 @@ export default function CheckoutPage() {
       items.reduce((sum, item) => {
         const price = item.price;
         const quantity = item.quantity;
-        if (item.promotion) {
-          if (item.promotion.type === "percentage") {
-            return sum + (price * quantity * item.promotion.value) / 100;
-          } else if (item.promotion.type === "fixed_amount") {
-            return sum + item.promotion.value;
+        if ((item as any).promotion) {
+          const promo = (item as any).promotion;
+          if (promo.type === "percentage") {
+            return sum + (price * quantity * promo.value) / 100;
+          } else if (promo.type === "fixed_amount") {
+            return sum + promo.value;
           }
         }
         return sum;
@@ -414,11 +385,7 @@ export default function CheckoutPage() {
     });
 
     if (items.length === 0) {
-      toast.error(
-        isBuyNow
-          ? "Không có sản phẩm Buy Now để thanh toán."
-          : "Giỏ hàng trống."
-      );
+      toast.error(isBuyNow ? "Không có sản phẩm Buy Now để thanh toán." : "Giỏ hàng trống.");
       return;
     }
     if (formInvalid) {
@@ -479,7 +446,6 @@ export default function CheckoutPage() {
       if (paymentMethod === "MOMO" || paymentMethod === "VNPAY") {
         const redirectUrl = res?.data?.redirect_url;
         if (redirectUrl) {
-          if (!isBuyNow) clearCart(); // BuyNow không xoá giỏ
           toast.success("✅ Đang chuyển hướng đến cổng thanh toán...");
           window.location.href = redirectUrl;
           return;
@@ -490,7 +456,6 @@ export default function CheckoutPage() {
       }
 
       // COD
-      if (!isBuyNow) clearCart();
       toast.success("✅ Đặt hàng thành công!");
       router.replace("/thank-you");
     } catch (error) {
@@ -499,7 +464,10 @@ export default function CheckoutPage() {
     }
   };
 
-  if (loading) return null;
+  /* ============ Guard UI sau khi KHAI BÁO TOÀN BỘ HOOKS ============ */
+  if (loadingAuth || !user) {
+    return <div className="p-6">Đang kiểm tra đăng nhập…</div>;
+  }
 
   const hasItems = items.length > 0;
 
@@ -518,11 +486,7 @@ export default function CheckoutPage() {
             <div className={styles.row}>
               <div className={styles.field}>
                 <input
-                  className={`${styles.input} ${
-                    touched.first_name && errors.first_name
-                      ? styles.invalid
-                      : ""
-                  }`}
+                  className={`${styles.input} ${touched.first_name && errors.first_name ? styles.invalid : ""}`}
                   placeholder="Tên"
                   value={form.first_name}
                   onChange={(e) =>
@@ -541,9 +505,7 @@ export default function CheckoutPage() {
 
               <div className={styles.field}>
                 <input
-                  className={`${styles.input} ${
-                    touched.last_name && errors.last_name ? styles.invalid : ""
-                  }`}
+                  className={`${styles.input} ${touched.last_name && errors.last_name ? styles.invalid : ""}`}
                   placeholder="Họ"
                   value={form.last_name}
                   onChange={(e) =>
@@ -564,9 +526,7 @@ export default function CheckoutPage() {
             <div className={styles.row}>
               <div className={styles.field}>
                 <input
-                  className={`${styles.input} ${
-                    touched.phone && errors.phone ? styles.invalid : ""
-                  }`}
+                  className={`${styles.input} ${touched.phone && errors.phone ? styles.invalid : ""}`}
                   placeholder="Số điện thoại"
                   value={form.phone}
                   onChange={(e) =>
@@ -586,9 +546,7 @@ export default function CheckoutPage() {
 
               <div className={styles.field}>
                 <input
-                  className={`${styles.input} ${
-                    touched.email && errors.email ? styles.invalid : ""
-                  }`}
+                  className={`${styles.input} ${touched.email && errors.email ? styles.invalid : ""}`}
                   type="email"
                   placeholder="Email"
                   value={form.email}
@@ -632,11 +590,7 @@ export default function CheckoutPage() {
             <div className={styles.row}>
               <div className={styles.field}>
                 <select
-                  className={`${styles.select} ${
-                    touched.province_code && errors.province_code
-                      ? styles.invalid
-                      : ""
-                  }`}
+                  className={`${styles.select} ${touched.province_code && errors.province_code ? styles.invalid : ""}`}
                   value={form.province_code}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -670,11 +624,7 @@ export default function CheckoutPage() {
 
               <div className={styles.field}>
                 <select
-                  className={`${styles.select} ${
-                    touched.district_code && errors.district_code
-                      ? styles.invalid
-                      : ""
-                  }`}
+                  className={`${styles.select} ${touched.district_code && errors.district_code ? styles.invalid : ""}`}
                   value={form.district_code}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -708,9 +658,7 @@ export default function CheckoutPage() {
 
               <div className={styles.field}>
                 <select
-                  className={`${styles.select} ${
-                    touched.ward_code && errors.ward_code ? styles.invalid : ""
-                  }`}
+                  className={`${styles.select} ${touched.ward_code && errors.ward_code ? styles.invalid : ""}`}
                   value={form.ward_code}
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, ward_code: e.target.value }))
@@ -737,11 +685,7 @@ export default function CheckoutPage() {
 
             <div className={styles.field}>
               <input
-                className={`${styles.input} ${
-                  touched.address_detail && errors.address_detail
-                    ? styles.invalid
-                    : ""
-                }`}
+                className={`${styles.input} ${touched.address_detail && errors.address_detail ? styles.invalid : ""}`}
                 placeholder="Địa chỉ cụ thể"
                 value={form.address_detail}
                 onChange={(e) =>
@@ -759,11 +703,7 @@ export default function CheckoutPage() {
                 aria-describedby="err-address-detail"
               />
               {touched.address_detail && errors.address_detail && (
-                <p
-                  id="err-address-detail"
-                  className={styles.error}
-                  role="alert"
-                >
+                <p id="err-address-detail" className={styles.error} role="alert">
                   {errors.address_detail}
                 </p>
               )}
@@ -817,7 +757,7 @@ export default function CheckoutPage() {
             </div>
           </section>
 
-          {/* Note (KHÔNG bắt buộc) */}
+          {/* Note */}
           <section className={styles.section}>
             <h2>Ghi chú</h2>
             <textarea
@@ -887,11 +827,12 @@ export default function CheckoutPage() {
           <div className={styles.voucher}>
             <p>Voucher khả dụng:</p>
             <div className={styles.voucherList}>
-              {voucherList.filter((v) => v.is_voucher_valiable).length ===
-                0 && <p>Không có voucher nào.</p>}
+              {voucherList.filter((v) => v.is_voucher_valiable).length === 0 && (
+                <p>Không có voucher nào.</p>
+              )}
 
               {voucherList
-                .filter((v) => v.is_voucher_valiable) // ✅ chỉ giữ voucher khả dụng
+                .filter((v) => v.is_voucher_valiable)
                 .map((v) => (
                   <button
                     key={v.id}

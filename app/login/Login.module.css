@@ -19,7 +19,9 @@
 .btn:hover{
   color:#145dbf
 }
-
+.link:hover{
+  color: #1877f2;
+}
 .leftPanel {
   background: linear-gradient(to bottom right, #f48fb1, #f06292);
   color: white;

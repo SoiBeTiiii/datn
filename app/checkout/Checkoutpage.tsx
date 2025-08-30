@@ -127,46 +127,45 @@ export default function CheckoutPage() {
     ward_code: false,
     address_detail: false,
   });
-
+ const toastFiredRef = useRef(false);
   /* ============ Auth check ============ */
   useEffect(() => {
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    toast.error("⚠️ Bạn cần đăng nhập để tiếp tục!");
+    router.push("/login");
+  }
+}, [router]);
+
+ useEffect(() => {
     let mounted = true;
 
-    const checkAuth = async () => {
+    (async () => {
       try {
-        const userData = await userInfo();
+        const u = await userInfo();        // sẽ throw nếu chưa đăng nhập (đã chỉnh ở authApi)
         if (!mounted) return;
-        setUser(userData);
-      } catch (err) {
-        // 👉 chỉ bắn toast 1 lần
-        if (
-          !loginToastIdRef.current ||
-          !toast.isActive(loginToastIdRef.current)
-        ) {
-          loginToastIdRef.current = toast.error(
-            "⚠️ Bạn cần đăng nhập để tiếp tục!",
-            {
-              toastId: "need-login",
-            }
-          );
+        setUser(u);
+      } catch {
+        // 👉 bắn toast ở trang này (sẽ hiển thị nếu ToastContainer ở layout gốc)
+        if (!toastFiredRef.current) {
+          toastFiredRef.current = true;
+          toast.error("⚠️ Bạn cần đăng nhập để tiếp tục!");
         }
-        // 👉 replace để tránh quay lại trang checkout rồi lặp lại
-        setTimeout(() => {
-          router.replace("/login");
-        }, 1200);
+        // 👉 đẩy sang login, kèm next để quay lại sau khi login
+        const next = encodeURIComponent("/checkout");
+        router.replace(`/login?reason=need-login&next=${next}`);
       } finally {
-        if (mounted) {
-          setLoading(false);
-          setAuthChecked(true); // ✅ báo hiệu đã check xong
-        }
+        if (mounted) setLoading(false);
       }
-    };
+    })();
 
-    checkAuth();
     return () => {
       mounted = false;
     };
   }, [router]);
+
+  if (loading) return <div className="p-6">Đang kiểm tra đăng nhập…</div>;
+  if (!user) return null; // đã replace sang /login rồi
 
   /* ============ Load data tĩnh ============ */
   useEffect(() => {

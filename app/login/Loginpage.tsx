@@ -104,7 +104,7 @@ export default function LoginPage() {
         <div className={styles.leftPanel}>
           <h1>Chào mừng trở lại 👋</h1>
           <p>Khám phá các sản phẩm làm đẹp mới nhất từ EGOMall!</p>
-         
+         <Link className={styles.link} href="/">Về trang chủ</Link>
         </div>
 
         <form noValidate onSubmit={handleLogin} className={styles.form}>

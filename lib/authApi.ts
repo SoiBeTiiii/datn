@@ -110,13 +110,20 @@ export const userInfo = async () => {
     const res = await authAxios.get<{ data: any }>("user", {
       withCredentials: true,
     });
-    return res.data.data; // Trả về thông tin người dùng
-  } catch (error) {
-    console.error('Lỗi khi lấy thông tin người dùng:', error);
+
+    const user = res.data.data;
+
+    if (!user) {
+      // 🚨 Tự ném lỗi nếu backend không ném
+      throw new Error("No user data");
+    }
+
+    return user;
+  } catch (error: any) {
+    console.error("Lỗi khi lấy thông tin người dùng:", error);
     throw error;
   }
 };
-
 // Gửi OTP
 export const requestResetOTP = async (email: string) => {
   const res = await authAxios.post("forgot-password", { email });
